@@ -1,7 +1,36 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "ZT Talk";
+  src: url("./assets/FONTS/ZT_talk/ZT Talk Free Typeface - WEB TT/ZTTalk-Regular.woff2") format("woff2"),
+       url("./assets/FONTS/ZT_talk/ZT Talk Free Typeface - WEB TT/ZTTalk-Regular.woff") format("woff"),
+       url("./assets/FONTS/ZT_talk/ZT Talk Free Typeface - WEB TT/ZTTalk-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "ZT Talk";
+  src: url("./assets/FONTS/ZT_talk/ZT Talk Free Typeface - WEB TT/ZTTalk-Bold.woff2") format("woff2"),
+       url("./assets/FONTS/ZT_talk/ZT Talk Free Typeface - WEB TT/ZTTalk-Bold.woff") format("woff"),
+       url("./assets/FONTS/ZT_talk/ZT Talk Free Typeface - WEB TT/ZTTalk-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Pavon";
+  src: url("./assets/FONTS/pavon/Pavon DEMO.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --font-sans: "Instrument Sans", "Google Sans Text", "SF Pro Display", "Segoe UI", sans-serif;
+  --font-display: "ZT Talk", "Pavon", "Instrument Sans", "Google Sans Text", "SF Pro Display", "Segoe UI", sans-serif;
   --color-surface: oklch(0.96 0.01 75);
   --color-surface-elevated: oklch(0.985 0.01 75);
   --color-primary: oklch(0.57 0.08 210);
@@ -132,8 +161,8 @@ button {
 .app-main {
   position: relative;
   z-index: 1;
-  overflow: clip;
-}
+  overflow: clip;  min-height: calc(100dvh - env(safe-area-inset-top, 0px));
+  background: inherit;}
 
 .app-chrome {
   position: relative;
@@ -354,9 +383,11 @@ button {
 
 .sheet-panel {
   position: fixed;
-  inset-inline: 0;
+  left: 50%;
   bottom: 0;
   z-index: 75;
+  width: min(100%, 430px);
+  transform: translateX(-50%);
   max-height: min(92dvh, calc(100dvh - env(safe-area-inset-top, 0px) - 0.5rem));
   overflow: auto;
   -webkit-overflow-scrolling: touch;

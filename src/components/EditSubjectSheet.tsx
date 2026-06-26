@@ -144,7 +144,7 @@ export const EditSubjectSheet = ({
           <div className="space-y-3">
             {slots.map((slot) => (
               <div key={slot.id} className="native-card grid gap-3 px-4 py-4">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <label className="space-y-2">
                     <span className="text-sm font-medium">Day</span>
                     <select
@@ -187,7 +187,7 @@ export const EditSubjectSheet = ({
                     />
                   </label>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <label className="space-y-2">
                     <span className="text-sm font-medium">Start</span>
                     <input
