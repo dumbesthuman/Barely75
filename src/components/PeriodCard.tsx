@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { motion } from "framer-motion";
 import { useAttendanceGesture } from "../hooks/useAttendanceGesture";
+import { LONG_PRESS_DURATION } from "../constants/app";
 import { RefreshIcon } from "./Icons";
 import { GENTLE_SPRING, SPRING } from "../constants/motion";
 import type { Period, ScheduleSlot, Subject } from "../types/attendance";
@@ -17,10 +18,10 @@ interface PeriodCardProps {
 }
 
 const statusCopy = {
-  PRESENT: "Present — tap to mark absent · hold to reset",
-  ABSENT: "Absent — tap to mark present · hold to reset",
-  CANCELLED: "Tap to mark attendance · hold to reset",
-  UNMARKED: "Tap present or absent · hold to clear",
+  PRESENT: "Present — tap to mark absent · hold for 3 seconds to reset",
+  ABSENT: "Absent — tap to mark present · hold for 3 seconds to reset",
+  CANCELLED: "Tap to mark attendance · hold for 3 seconds to reset",
+  UNMARKED: "Tap present or absent · hold for 3 seconds to clear",
 } as const;
 
 export const PeriodCard = memo(
@@ -96,12 +97,12 @@ export const PeriodCard = memo(
             </p>
             <p className="mt-3 text-sm leading-6 text-secondary">
               {readOnly ? "Scheduled class" : statusCopy[statusKey]}
-              {!readOnly && isPressed && period.status !== null ? (
-                <span className="ml-2 text-[0.78rem] font-semibold text-primary">
-                  Holding to reset…
-                </span>
-              ) : null}
             </p>
+            {!readOnly && isPressed && period.status !== null ? (
+              <p className="mt-2 text-xs font-semibold text-primary">
+                Reset in {Math.max(0, Math.ceil((1 - longPressProgress) * (LONG_PRESS_DURATION / 1000)))}s
+              </p>
+            ) : null}
           </div>
 
           <div className="flex items-start gap-3">
@@ -120,20 +121,6 @@ export const PeriodCard = memo(
                 {readOnly ? "Soon" : period.status === null ? "Tap" : getStatusLabel(period.status).slice(0, 3)}
               </span>
             </motion.div>
-
-            {!readOnly && period.status !== null ? (
-              <button
-                type="button"
-                className="focus-ring inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-surface-elevated text-secondary transition hover:bg-surface-elevated/90"
-                aria-label="Reset attendance status"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  onClear(period.id);
-                }}
-              >
-                <RefreshIcon className="h-5 w-5" />
-              </button>
-            ) : null}
           </div>
         </div>
       </motion.div>
