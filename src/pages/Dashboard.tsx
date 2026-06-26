@@ -3,10 +3,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { AddSubjectSheet } from "../components/AddSubjectSheet";
 import { AnalyticsCards } from "../components/AnalyticsCards";
 import { AttendanceRing } from "../components/AttendanceRing";
-import { BottomNavigation, type NavigationTab } from "../components/BottomNavigation";
+import { BottomDock } from "../components/BottomDock";
+import type { NavigationTab } from "../components/BottomNavigation";
 import { EditSubjectSheet } from "../components/EditSubjectSheet";
-import { FloatingAddSubjectButton } from "../components/FloatingAddSubjectButton";
 import { InstallPrompt } from "../components/InstallPrompt";
+import { TabTransitionAura } from "../components/TabTransitionAura";
 import { ProgressWidgets } from "../components/ProgressWidgets";
 import { PredictionCard } from "../components/PredictionCard";
 import { SettingsSheet } from "../components/SettingsSheet";
@@ -192,6 +193,10 @@ export const Dashboard = () => {
     dispatch({ type: "clear-all-subjects" });
   }, [dispatch]);
 
+  const handleSkipWeekend = useCallback(() => {
+    setScheduleDate(todayIso);
+  }, [todayIso]);
+
   const handleConfirmWeekendCollege = useCallback(
     (dateIso: string) => {
       const alreadyMarked = state.weekendCollegeDays.includes(dateIso);
@@ -264,6 +269,7 @@ export const Dashboard = () => {
             weekendCollegeDays={state.weekendCollegeDays}
             onSelectedDateChange={setScheduleDate}
             onConfirmWeekendCollege={handleConfirmWeekendCollege}
+            onSkipWeekend={handleSkipWeekend}
             periods={getPeriodsForDate(scheduleDate)}
             onCycle={handleCycle}
             onClear={handleClear}
@@ -311,6 +317,7 @@ export const Dashboard = () => {
     handleClear,
     handleCycle,
     handleConfirmWeekendCollege,
+    handleSkipWeekend,
     handleDeleteSubject,
     overallMetrics,
     prediction,
@@ -323,9 +330,13 @@ export const Dashboard = () => {
     todayIso,
   ]);
 
+  const sheetOpen =
+    settingsOpen || addSubjectOpen || editSubjectId !== null || sadModalDate !== null;
+
   return (
     <MotionConfig reducedMotion={state.settings.reducedMotion ? "always" : "user"}>
       <div className="app-root mx-auto min-h-dvh max-w-[430px]">
+        <TabTransitionAura activeTab={activeTab} />
         <div className="app-shell px-4">
           <header className="flex items-start justify-between gap-4 px-1 pb-5 pt-3">
             <div className="min-w-0">
@@ -354,10 +365,10 @@ export const Dashboard = () => {
             <motion.main
               key={activeTab}
               className="app-main space-y-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.18 }}
+              initial={{ opacity: 0, filter: "blur(6px)" }}
+              animate={{ opacity: 1, filter: "blur(0px)" }}
+              exit={{ opacity: 0, filter: "blur(4px)" }}
+              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
             >
               {activeTab === "overview" ? <InstallPrompt /> : null}
               {screen}
@@ -365,15 +376,15 @@ export const Dashboard = () => {
           </AnimatePresence>
         </div>
 
-        <div className="app-chrome">
-          <FloatingAddSubjectButton
-            onClick={() => {
-              pushLayer();
-              setAddSubjectOpen(true);
-            }}
-          />
-          <BottomNavigation activeTab={activeTab} onChange={navigateTab} />
-        </div>
+        <BottomDock
+          hidden={sheetOpen}
+          activeTab={activeTab}
+          onNavigate={navigateTab}
+          onAddSubject={() => {
+            pushLayer();
+            setAddSubjectOpen(true);
+          }}
+        />
 
         <SettingsSheet
           open={settingsOpen}

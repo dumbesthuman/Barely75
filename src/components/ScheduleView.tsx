@@ -3,13 +3,12 @@ import { useEffect, useMemo, useState } from "react";
 import { GENTLE_SPRING } from "../constants/motion";
 import type { Period, ScheduleSlot, Subject } from "../types/attendance";
 import {
+  addDaysToIso,
   compareIsoDates,
-  findNextSchedulableDay,
   formatCompactDate,
   formatFullDate,
   formatWeekday,
   getDayOffsetLabel,
-  isNavigableScheduleDay,
   isWeekendIso,
 } from "../utils/date";
 import { ChevronLeftIcon, ChevronRightIcon } from "./Icons";
@@ -22,6 +21,7 @@ interface ScheduleViewProps {
   weekendCollegeDays: string[];
   onSelectedDateChange: (dateIso: string) => void;
   onConfirmWeekendCollege: (dateIso: string) => void;
+  onSkipWeekend: () => void;
   periods: Array<Period & { slot: ScheduleSlot; subject: Subject }>;
   onCycle: (periodId: string, currentStatus: Period["status"]) => void;
   onClear: (periodId: string) => void;
@@ -33,31 +33,24 @@ export const ScheduleView = ({
   weekendCollegeDays,
   onSelectedDateChange,
   onConfirmWeekendCollege,
+  onSkipWeekend,
   periods,
   onCycle,
   onClear,
 }: ScheduleViewProps) => {
   const [direction, setDirection] = useState(0);
-  const [hasScrolledDays, setHasScrolledDays] = useState(false);
 
   const isToday = selectedDate === todayIso;
   const isFuture = compareIsoDates(selectedDate, todayIso) > 0;
   const isPast = compareIsoDates(selectedDate, todayIso) < 0;
-  const isMarkedWeekend =
-    isWeekendIso(selectedDate) && weekendCollegeDays.includes(selectedDate);
-
-  const weekendArrived =
-    isWeekendIso(todayIso) && !weekendCollegeDays.includes(todayIso);
-
-  const showWeekendPrompt = hasScrolledDays || weekendArrived;
-
-  useEffect(() => {
-    if (!isNavigableScheduleDay(selectedDate, weekendCollegeDays)) {
-      onSelectedDateChange(findNextSchedulableDay(selectedDate, 1, weekendCollegeDays));
-    }
-  }, [onSelectedDateChange, selectedDate, weekendCollegeDays]);
+  const isWeekend = isWeekendIso(selectedDate);
+  const isMarkedWeekend = isWeekend && weekendCollegeDays.includes(selectedDate);
+  const isUnmarkedWeekend = isWeekend && !weekendCollegeDays.includes(selectedDate);
 
   const heading = useMemo(() => {
+    if (isUnmarkedWeekend) {
+      return formatWeekday(selectedDate);
+    }
     if (isMarkedWeekend) {
       return "Weekend Schedule";
     }
@@ -68,12 +61,11 @@ export const ScheduleView = ({
       return "Past Schedule";
     }
     return "Upcoming Schedule";
-  }, [isMarkedWeekend, isPast, isToday]);
+  }, [isMarkedWeekend, isPast, isToday, isUnmarkedWeekend, selectedDate]);
 
   const moveByDay = (step: -1 | 1) => {
-    setHasScrolledDays(true);
     setDirection(step);
-    onSelectedDateChange(findNextSchedulableDay(selectedDate, step, weekendCollegeDays));
+    onSelectedDateChange(addDaysToIso(selectedDate, step));
   };
 
   useEffect(() => {
@@ -100,7 +92,7 @@ export const ScheduleView = ({
             <p className="mt-1 text-base font-semibold tracking-tight">{formatFullDate(selectedDate)}</p>
             <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
               {formatWeekday(selectedDate)} · {formatCompactDate(selectedDate)}
-              {isMarkedWeekend ? " · weekend class" : ""}
+              {isMarkedWeekend ? " · weekend class" : isWeekend ? " · weekend" : ""}
             </p>
           </div>
 
@@ -128,71 +120,71 @@ export const ScheduleView = ({
         ) : null}
       </div>
 
-      {showWeekendPrompt ? (
+      {isUnmarkedWeekend ? (
         <WeekendCollegePrompt
-          todayIso={todayIso}
-          selectedDate={selectedDate}
-          weekendCollegeDays={weekendCollegeDays}
-          weekendArrived={weekendArrived}
+          dateIso={selectedDate}
           onConfirmCollege={onConfirmWeekendCollege}
+          onSkipWeekend={onSkipWeekend}
         />
-      ) : null}
-
-      <div className="section-heading">
-        <h2>{heading}</h2>
-        <p>
-          {periods.length === 0
-            ? "No classes scheduled for this day."
-            : `${periods.length} class${periods.length === 1 ? "" : "es"}`}
-        </p>
-      </div>
-
-      {isFuture ? (
-        <p className="px-1 text-sm leading-6 text-[var(--color-text-secondary)]">
-          Preview only. You can mark attendance once the day arrives.
-        </p>
-      ) : null}
-
-      {periods.length === 0 ? (
-        <motion.div
-          key={selectedDate}
-          className="native-card px-5 py-6 text-sm leading-6 text-[var(--color-text-secondary)]"
-          initial={{ opacity: 0, y: direction === 0 ? 10 : direction > 0 ? 14 : -14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={GENTLE_SPRING}
-        >
-          {isMarkedWeekend
-            ? "This weekend day is marked for college but no classes are set yet. Add subjects with Saturday or Sunday slots."
-            : isFuture
-              ? "Your weekly timetable has no classes on this weekday yet. Add subjects from the + button."
-              : "Nothing was scheduled here. Browse other days or add subjects with weekly slots."}
-        </motion.div>
       ) : (
-        <motion.div
-          key={selectedDate}
-          className="space-y-3"
-          initial={{ opacity: 0, x: direction === 0 ? 0 : direction > 0 ? 18 : -18 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={GENTLE_SPRING}
-        >
-          {periods.map((period, index) => (
+        <>
+          <div className="section-heading">
+            <h2>{heading}</h2>
+            <p>
+              {periods.length === 0
+                ? "No classes scheduled for this day."
+                : `${periods.length} class${periods.length === 1 ? "" : "es"}`}
+            </p>
+          </div>
+
+          {isFuture ? (
+            <p className="px-1 text-sm leading-6 text-[var(--color-text-secondary)]">
+              Preview only. You can mark attendance once the day arrives.
+            </p>
+          ) : null}
+
+          {periods.length === 0 ? (
             <motion.div
-              key={period.id}
-              initial={{ opacity: 0, y: 10 }}
+              key={selectedDate}
+              className="native-card px-5 py-6 text-sm leading-6 text-[var(--color-text-secondary)]"
+              initial={{ opacity: 0, y: direction === 0 ? 10 : direction > 0 ? 14 : -14 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ ...GENTLE_SPRING, delay: index * 0.03 }}
+              transition={GENTLE_SPRING}
             >
-              <PeriodCard
-                period={period}
-                slot={period.slot}
-                subject={period.subject}
-                readOnly={isFuture}
-                onCycle={onCycle}
-                onClear={onClear}
-              />
+              {isMarkedWeekend
+                ? "This weekend day is marked for college but no classes are set yet. Add subjects with Saturday or Sunday slots."
+                : isFuture
+                  ? "Your weekly timetable has no classes on this weekday yet. Add subjects from the + button."
+                  : "Nothing was scheduled here. Browse other days or add subjects with weekly slots."}
             </motion.div>
-          ))}
-        </motion.div>
+          ) : (
+            <motion.div
+              key={selectedDate}
+              className="space-y-3"
+              initial={{ opacity: 0, x: direction === 0 ? 0 : direction > 0 ? 18 : -18 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={GENTLE_SPRING}
+            >
+              {periods.map((period, index) => (
+                <motion.div
+                  key={period.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ ...GENTLE_SPRING, delay: index * 0.03 }}
+                >
+                  <PeriodCard
+                    period={period}
+                    slot={period.slot}
+                    subject={period.subject}
+                    readOnly={isFuture}
+                    onCycle={onCycle}
+                    onClear={onClear}
+                  />
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+        </>
       )}
     </section>
   );

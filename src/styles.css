@@ -84,20 +84,49 @@ button {
 }
 
 .app-root {
+  position: relative;
   min-height: 100dvh;
   min-height: -webkit-fill-available;
-  background:
-    radial-gradient(circle at top left, color-mix(in srgb, var(--color-primary) 12%, transparent), transparent 38%),
-    radial-gradient(circle at top right, color-mix(in srgb, var(--color-success) 14%, transparent), transparent 32%),
-    var(--color-surface);
+  background: var(--color-surface);
   padding-top: env(safe-area-inset-top, 0px);
   padding-left: env(safe-area-inset-left, 0px);
   padding-right: env(safe-area-inset-right, 0px);
+  isolation: isolate;
+}
+
+.tab-aura {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.tab-aura-blob {
+  position: absolute;
+  width: min(92vw, 22rem);
+  height: min(92vw, 22rem);
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  filter: blur(48px);
+  opacity: 0.55;
+  will-change: left, top, transform;
+}
+
+.tab-aura-blob-primary {
+  z-index: 1;
+}
+
+.tab-aura-blob-secondary {
+  z-index: 0;
+  background: radial-gradient(circle, color-mix(in srgb, var(--color-success) 35%, transparent) 0%, transparent 70%);
+  opacity: 0.4;
 }
 
 .app-shell {
   position: relative;
-  padding-bottom: calc(6.5rem + env(safe-area-inset-bottom, 0px));
+  z-index: 1;
+  padding-bottom: calc(7.75rem + env(safe-area-inset-bottom, 0px));
 }
 
 .app-main {
@@ -112,8 +141,51 @@ button {
   pointer-events: none;
 }
 
-.app-chrome > * {
+.bottom-dock {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  z-index: 45;
+  width: min(calc(100vw - 1.5rem), 24rem);
+  transform: translateX(-50%);
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.bottom-dock.is-hidden {
+  opacity: 0;
+  transform: translateX(-50%) translateY(110%);
+  pointer-events: none;
+}
+
+.bottom-dock > * {
   pointer-events: auto;
+}
+
+.dock-fab {
+  position: absolute;
+  right: 0.35rem;
+  bottom: calc(100% + 0.55rem);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--color-text-primary);
+  color: var(--color-surface);
+  box-shadow: var(--shadow-fab);
+}
+
+.bottom-dock .native-nav {
+  position: static;
+  left: auto;
+  bottom: auto;
+  width: 100%;
+  transform: none;
+  margin: 0;
 }
 
 .pt-safe-top {
@@ -274,9 +346,9 @@ button {
 .scrim {
   position: fixed;
   inset: 0;
-  z-index: 55;
+  z-index: 70;
   border: 0;
-  background: rgba(10, 10, 16, 0.24);
+  background: rgba(10, 10, 16, 0.32);
   backdrop-filter: blur(8px);
 }
 
@@ -284,16 +356,16 @@ button {
   position: fixed;
   inset-inline: 0;
   bottom: 0;
-  z-index: 60;
-  max-height: 88dvh;
+  z-index: 75;
+  max-height: min(92dvh, calc(100dvh - env(safe-area-inset-top, 0px) - 0.5rem));
   overflow: auto;
+  -webkit-overflow-scrolling: touch;
   border-top-left-radius: 32px;
   border-top-right-radius: 32px;
   border: 1px solid var(--color-border);
-  background: color-mix(in srgb, var(--color-surface) 92%, transparent);
-  padding: 1rem 1rem calc(max(1.5rem, env(safe-area-inset-bottom) + 1rem));
+  background: var(--color-surface);
+  padding: 1rem 1rem calc(max(1.5rem, env(safe-area-inset-bottom, 0px)) + 0.5rem);
   box-shadow: var(--shadow-soft);
-  backdrop-filter: blur(20px);
 }
 
 .input-field {
@@ -324,10 +396,11 @@ button {
   }
 
   .sheet-panel {
-    left: 50%;
-    right: auto;
-    width: min(430px, calc(100vw - 2rem));
-    transform: translateX(-50%);
+    max-height: min(92dvh, calc(100dvh - env(safe-area-inset-top, 0px) - 0.5rem));
+  }
+
+  .bottom-dock {
+    width: min(430px, calc(100vw - 1rem));
   }
 
   .fab-button {
