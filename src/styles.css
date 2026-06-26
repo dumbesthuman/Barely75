@@ -381,15 +381,18 @@ button {
   backdrop-filter: blur(8px);
 }
 
-.sheet-panel {
+...sheet-panel {
   position: fixed;
-  left: 50%;
+  inset-inline: 0;
   bottom: 0;
   z-index: 75;
+  margin-inline: auto;
   width: min(100%, 430px);
-  transform: translateX(-50%);
+  max-width: min(430px, calc(100vw - 1rem));
+  box-sizing: border-box;
   max-height: min(92dvh, calc(100dvh - env(safe-area-inset-top, 0px) - 0.5rem));
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   border-top-left-radius: 32px;
   border-top-right-radius: 32px;
@@ -437,5 +440,14 @@ button {
   .fab-button {
     min-width: 0;
     padding-inline: 1.1rem;
+  }
+}
+
+@media (max-width: 639px) {
+  .sheet-panel {
+    width: calc(100vw - 1rem);
+    max-width: calc(100vw - 1rem);
+    padding-inline: max(0.75rem, env(safe-area-inset-left, 0.75rem));
+    padding-right: max(0.75rem, env(safe-area-inset-right, 0.75rem));
   }
 }
