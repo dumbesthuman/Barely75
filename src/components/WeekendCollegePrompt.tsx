@@ -6,6 +6,7 @@ interface WeekendCollegePromptProps {
   todayIso: string;
   selectedDate: string;
   weekendCollegeDays: string[];
+  weekendArrived: boolean;
   onConfirmCollege: (dateIso: string) => void;
 }
 
@@ -13,6 +14,7 @@ export const WeekendCollegePrompt = ({
   todayIso,
   selectedDate,
   weekendCollegeDays,
+  weekendArrived,
   onConfirmCollege,
 }: WeekendCollegePromptProps) => {
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -26,7 +28,10 @@ export const WeekendCollegePrompt = ({
   const viewingMarkedWeekend =
     isWeekendIso(selectedDate) && weekendCollegeDays.includes(selectedDate);
 
-  if (viewingMarkedWeekend) {
+  const hasUnmarkedWeekendNearby =
+    !weekendCollegeDays.includes(saturday) || !weekendCollegeDays.includes(sunday);
+
+  if (viewingMarkedWeekend || !hasUnmarkedWeekendNearby) {
     return null;
   }
 
@@ -42,37 +47,26 @@ export const WeekendCollegePrompt = ({
   return (
     <>
       <section className="native-card px-4 py-4">
-        <p className="text-sm font-medium">Weekends are off by default</p>
+        <p className="text-sm font-medium">
+          {weekendArrived ? `It’s ${formatWeekday(todayIso)} — college today?` : "Skipping a weekend?"}
+        </p>
         <p className="mt-1 text-sm leading-6 text-[var(--color-text-secondary)]">
-          Saturday and Sunday are hidden while you scroll. Unexpected college day?
+          {weekendArrived
+            ? "Weekends are usually off. Tap below if classes are actually happening."
+            : "Saturday and Sunday stay hidden unless you mark them."}
         </p>
         <div className="mt-3 grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            className="secondary-button"
-            disabled={weekendCollegeDays.includes(saturday)}
-            onClick={() => openConfirm(saturday)}
-          >
-            {weekendCollegeDays.includes(saturday) ? "Sat added" : `This ${formatWeekday(saturday)}`}
-          </button>
-          <button
-            type="button"
-            className="secondary-button"
-            disabled={weekendCollegeDays.includes(sunday)}
-            onClick={() => openConfirm(sunday)}
-          >
-            {weekendCollegeDays.includes(sunday) ? "Sun added" : `This ${formatWeekday(sunday)}`}
-          </button>
+          {!weekendCollegeDays.includes(saturday) ? (
+            <button type="button" className="secondary-button" onClick={() => openConfirm(saturday)}>
+              {weekendArrived && todayIso === saturday ? "Yes, college today" : `This ${formatWeekday(saturday)}`}
+            </button>
+          ) : null}
+          {!weekendCollegeDays.includes(sunday) ? (
+            <button type="button" className="secondary-button" onClick={() => openConfirm(sunday)}>
+              {weekendArrived && todayIso === sunday ? "Yes, college today" : `This ${formatWeekday(sunday)}`}
+            </button>
+          ) : null}
         </div>
-        {isWeekendIso(todayIso) && !weekendCollegeDays.includes(todayIso) ? (
-          <button
-            type="button"
-            className="primary-button mt-2 w-full"
-            onClick={() => openConfirm(todayIso)}
-          >
-            College today ({formatWeekday(todayIso)})?
-          </button>
-        ) : null}
       </section>
 
       <BottomSheet

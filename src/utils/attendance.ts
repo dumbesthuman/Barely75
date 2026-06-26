@@ -11,12 +11,18 @@ import type {
 
 const roundPercentage = (value: number) => Math.round(value * 10) / 10;
 
-export const cycleStatus = (status: PeriodStatus): PeriodStatus => {
+export const cyclePresentAbsent = (status: PeriodStatus): PeriodStatus => {
   if (status === "PRESENT") {
     return "ABSENT";
   }
+  if (status === "ABSENT") {
+    return "PRESENT";
+  }
   return "PRESENT";
 };
+
+/** @deprecated Use cyclePresentAbsent */
+export const cycleStatus = cyclePresentAbsent;
 
 export const buildMetrics = (
   periods: Period[],

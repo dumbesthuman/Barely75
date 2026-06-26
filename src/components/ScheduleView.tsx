@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from "react";
 import { GENTLE_SPRING } from "../constants/motion";
 import type { Period, ScheduleSlot, Subject } from "../types/attendance";
 import {
-  addDaysToIso,
   compareIsoDates,
   findNextSchedulableDay,
   formatCompactDate,
@@ -25,7 +24,7 @@ interface ScheduleViewProps {
   onConfirmWeekendCollege: (dateIso: string) => void;
   periods: Array<Period & { slot: ScheduleSlot; subject: Subject }>;
   onCycle: (periodId: string, currentStatus: Period["status"]) => void;
-  onCancel: (periodId: string) => void;
+  onClear: (periodId: string) => void;
 }
 
 export const ScheduleView = ({
@@ -36,14 +35,21 @@ export const ScheduleView = ({
   onConfirmWeekendCollege,
   periods,
   onCycle,
-  onCancel,
+  onClear,
 }: ScheduleViewProps) => {
   const [direction, setDirection] = useState(0);
+  const [hasScrolledDays, setHasScrolledDays] = useState(false);
+
   const isToday = selectedDate === todayIso;
   const isFuture = compareIsoDates(selectedDate, todayIso) > 0;
   const isPast = compareIsoDates(selectedDate, todayIso) < 0;
   const isMarkedWeekend =
     isWeekendIso(selectedDate) && weekendCollegeDays.includes(selectedDate);
+
+  const weekendArrived =
+    isWeekendIso(todayIso) && !weekendCollegeDays.includes(todayIso);
+
+  const showWeekendPrompt = hasScrolledDays || weekendArrived;
 
   useEffect(() => {
     if (!isNavigableScheduleDay(selectedDate, weekendCollegeDays)) {
@@ -65,6 +71,7 @@ export const ScheduleView = ({
   }, [isMarkedWeekend, isPast, isToday]);
 
   const moveByDay = (step: -1 | 1) => {
+    setHasScrolledDays(true);
     setDirection(step);
     onSelectedDateChange(findNextSchedulableDay(selectedDate, step, weekendCollegeDays));
   };
@@ -75,13 +82,6 @@ export const ScheduleView = ({
 
   return (
     <section className="space-y-4">
-      <WeekendCollegePrompt
-        todayIso={todayIso}
-        selectedDate={selectedDate}
-        weekendCollegeDays={weekendCollegeDays}
-        onConfirmCollege={onConfirmWeekendCollege}
-      />
-
       <div className="schedule-nav native-card px-3 py-3">
         <div className="flex items-center gap-2">
           <button
@@ -127,6 +127,16 @@ export const ScheduleView = ({
           </button>
         ) : null}
       </div>
+
+      {showWeekendPrompt ? (
+        <WeekendCollegePrompt
+          todayIso={todayIso}
+          selectedDate={selectedDate}
+          weekendCollegeDays={weekendCollegeDays}
+          weekendArrived={weekendArrived}
+          onConfirmCollege={onConfirmWeekendCollege}
+        />
+      ) : null}
 
       <div className="section-heading">
         <h2>{heading}</h2>
@@ -178,7 +188,7 @@ export const ScheduleView = ({
                 subject={period.subject}
                 readOnly={isFuture}
                 onCycle={onCycle}
-                onCancel={onCancel}
+                onClear={onClear}
               />
             </motion.div>
           ))}

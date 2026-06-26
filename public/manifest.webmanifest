@@ -1,9 +1,10 @@
 {
-  "name": "Attendance Tracker",
-  "short_name": "Attendance",
+  "name": "Barely 75",
+  "short_name": "Barely 75",
   "description": "A premium mobile-first attendance tracker with live analytics and offline support.",
   "start_url": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "background_color": "#f2eee7",
   "theme_color": "#f2eee7",
   "orientation": "portrait",

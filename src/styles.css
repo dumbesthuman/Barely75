@@ -49,22 +49,22 @@
 
 html {
   min-height: 100%;
-  background:
-    radial-gradient(circle at top left, color-mix(in srgb, var(--color-primary) 12%, transparent), transparent 38%),
-    radial-gradient(circle at top right, color-mix(in srgb, var(--color-success) 14%, transparent), transparent 32%),
-    var(--color-surface);
+  min-height: 100dvh;
+  background: var(--color-surface);
   color: var(--color-text-primary);
 }
 
 body {
   min-height: 100dvh;
+  min-height: -webkit-fill-available;
   margin: 0;
-  background: transparent;
+  background: var(--color-surface);
   color: var(--color-text-primary);
   font-family: var(--font-sans);
   font-feature-settings: "ss01" on, "cv02" on;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  overscroll-behavior: none;
 }
 
 button,
@@ -79,14 +79,45 @@ button {
 
 #root {
   min-height: 100dvh;
+  min-height: -webkit-fill-available;
+  background: var(--color-surface);
+}
+
+.app-root {
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
+  background:
+    radial-gradient(circle at top left, color-mix(in srgb, var(--color-primary) 12%, transparent), transparent 38%),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--color-success) 14%, transparent), transparent 32%),
+    var(--color-surface);
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
 }
 
 .app-shell {
   position: relative;
+  padding-bottom: calc(6.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+.app-main {
+  position: relative;
+  z-index: 1;
+  overflow: clip;
+}
+
+.app-chrome {
+  position: relative;
+  z-index: 40;
+  pointer-events: none;
+}
+
+.app-chrome > * {
+  pointer-events: auto;
 }
 
 .pt-safe-top {
-  padding-top: max(1rem, env(safe-area-inset-top));
+  padding-top: 0;
 }
 
 .pb-safe-bottom {
@@ -105,23 +136,26 @@ button {
 .native-nav {
   position: fixed;
   left: 50%;
-  bottom: max(1rem, env(safe-area-inset-bottom));
+  bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
   width: min(calc(100vw - 1.5rem), 24rem);
   transform: translateX(-50%);
+  z-index: 40;
   display: flex;
   gap: 0.5rem;
   padding: 0.5rem;
   border: 1px solid var(--color-border);
   border-radius: 28px;
-  background: color-mix(in srgb, var(--color-surface-elevated) 82%, transparent);
+  background: color-mix(in srgb, var(--color-surface-elevated) 94%, transparent);
   backdrop-filter: blur(18px);
   box-shadow: var(--shadow-soft);
+  isolation: isolate;
 }
 
 .fab-button {
   position: fixed;
   right: max(0.9rem, calc((100vw - min(24rem, calc(100vw - 1.5rem))) / 2));
-  bottom: calc(max(6.2rem, env(safe-area-inset-bottom) + 5.4rem));
+  bottom: calc(max(6.2rem, env(safe-area-inset-bottom, 0px) + 5.4rem));
+  z-index: 39;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -240,6 +274,7 @@ button {
 .scrim {
   position: fixed;
   inset: 0;
+  z-index: 55;
   border: 0;
   background: rgba(10, 10, 16, 0.24);
   backdrop-filter: blur(8px);
@@ -249,6 +284,7 @@ button {
   position: fixed;
   inset-inline: 0;
   bottom: 0;
+  z-index: 60;
   max-height: 88dvh;
   overflow: auto;
   border-top-left-radius: 32px;
@@ -273,7 +309,7 @@ button {
 .schedule-nav {
   position: sticky;
   top: max(0.5rem, env(safe-area-inset-top));
-  z-index: 10;
+  z-index: 5;
 }
 
 .install-banner {

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { APP_NAME } from "../constants/app";
 import { DownloadIcon } from "./Icons";
 
 interface BeforeInstallPromptEvent extends Event {
@@ -75,7 +76,7 @@ export const InstallPrompt = () => {
           <p className="font-medium">Install on your phone</p>
           <p className="mt-1 text-sm leading-6 text-[var(--color-text-secondary)]">
             {deferredPrompt
-              ? "Add Attendance Tracker to your home screen for offline access and a full-screen app experience."
+              ? `Add ${APP_NAME} to your home screen for offline access and a full-screen app experience.`
               : "On iPhone or iPad, tap Share in Safari, then choose Add to Home Screen."}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">

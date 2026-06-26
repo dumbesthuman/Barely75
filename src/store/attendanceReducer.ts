@@ -7,11 +7,12 @@ import type {
   SettingsState,
   Subject,
 } from "../types/attendance";
-import { cycleStatus } from "../utils/attendance";
+import { cyclePresentAbsent } from "../utils/attendance";
 
 export type AttendanceAction =
   | { type: "cycle-period"; periodId: string }
   | { type: "set-period-status"; periodId: string; status: PeriodStatus }
+  | { type: "clear-period"; periodId: string }
   | { type: "cancel-period"; periodId: string }
   | { type: "add-subject"; subject: Subject; scheduleSlots: ScheduleSlot[]; periods: AttendanceState["periods"] }
   | { type: "update-subject"; subjectId: string; patch: Pick<Subject, "name" | "teacher" | "targetAttendance"> }
@@ -46,7 +47,7 @@ export const attendanceReducer = (
           period.id === action.periodId
             ? {
                 ...period,
-                status: cycleStatus(period.status),
+                status: cyclePresentAbsent(period.status),
               }
             : period,
         ),
@@ -59,6 +60,18 @@ export const attendanceReducer = (
             ? {
                 ...period,
                 status: action.status,
+              }
+            : period,
+        ),
+      };
+    case "clear-period":
+      return {
+        ...state,
+        periods: state.periods.map((period) =>
+          period.id === action.periodId
+            ? {
+                ...period,
+                status: null,
               }
             : period,
         ),

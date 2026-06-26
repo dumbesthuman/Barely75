@@ -15,7 +15,7 @@ export const SadCollegeModal = ({ open, dateIso, onClose, onAddSubjects }: SadCo
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center">
+    <div className="fixed inset-0 z-[65] flex items-end justify-center p-4 sm:items-center">
       <button
         type="button"
         className="scrim"

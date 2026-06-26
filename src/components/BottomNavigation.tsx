@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { CalendarIcon, ChartIcon, LayersIcon } from "./Icons";
 
 export type NavigationTab = "overview" | "schedule" | "subjects";
@@ -24,16 +23,12 @@ export const BottomNavigation = ({ activeTab, onChange }: BottomNavigationProps)
         <button
           key={tab.id}
           type="button"
-          className="relative flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-[22px] px-2 py-3 text-[0.72rem]"
+          className={`relative flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-[22px] px-2 py-3 text-[0.72rem] ${
+            active ? "bg-[var(--color-surface-elevated)]" : ""
+          }`}
           onClick={() => onChange(tab.id)}
           aria-current={active ? "page" : undefined}
         >
-          {active ? (
-            <motion.span
-              layoutId="nav-indicator"
-              className="absolute inset-0 rounded-[22px] bg-[var(--color-surface-elevated)]"
-            />
-          ) : null}
           <span className="relative z-10 flex h-9 w-9 items-center justify-center rounded-full">
             <Icon className="h-5 w-5" />
           </span>

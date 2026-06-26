@@ -12,18 +12,18 @@ interface PeriodCardProps {
   subject: Subject;
   readOnly?: boolean;
   onCycle: (periodId: string, currentStatus: Period["status"]) => void;
-  onCancel: (periodId: string) => void;
+  onClear: (periodId: string) => void;
 }
 
 const statusCopy = {
-  PRESENT: "Recorded as present",
-  ABSENT: "Recorded as absent",
-  CANCELLED: "Class cancelled",
-  UNMARKED: "Tap to mark, hold to cancel",
+  PRESENT: "Present — tap to mark absent",
+  ABSENT: "Absent — tap to mark present",
+  CANCELLED: "Tap to mark attendance",
+  UNMARKED: "Tap present or absent · hold to clear",
 } as const;
 
 export const PeriodCard = memo(
-  ({ period, slot, subject, readOnly = false, onCycle, onCancel }: PeriodCardProps) => {
+  ({ period, slot, subject, readOnly = false, onCycle, onClear }: PeriodCardProps) => {
     const { gestureProps, isPressed, longPressProgress } = useAttendanceGesture({
       onTap: () => {
         if (!readOnly) {
@@ -32,12 +32,12 @@ export const PeriodCard = memo(
       },
       onLongPress: () => {
         if (!readOnly) {
-          onCancel(period.id);
+          onClear(period.id);
         }
       },
       onDelete: () => {
         if (!readOnly) {
-          onCancel(period.id);
+          onClear(period.id);
         }
       },
       disabled: readOnly,
@@ -45,7 +45,6 @@ export const PeriodCard = memo(
 
     const statusKey = period.status ?? "UNMARKED";
     const accent = getStatusAccent(period.status);
-    const isCancelled = period.status === "CANCELLED";
     const isAbsent = period.status === "ABSENT";
 
     return (
@@ -104,7 +103,6 @@ export const PeriodCard = memo(
             animate={{
               backgroundColor: accent,
               color: period.status === null ? "var(--color-text-secondary)" : "white",
-              rotate: isCancelled ? [0, 8, -6, 0] : 0,
             }}
             transition={SPRING}
             style={{
@@ -125,7 +123,7 @@ export const PeriodCard = memo(
     previous.subject === next.subject &&
     previous.readOnly === next.readOnly &&
     previous.onCycle === next.onCycle &&
-    previous.onCancel === next.onCancel,
+    previous.onClear === next.onClear,
 );
 
 PeriodCard.displayName = "PeriodCard";

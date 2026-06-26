@@ -3,6 +3,7 @@ import { BottomSheet } from "./BottomSheet";
 import { DownloadIcon, RefreshIcon, TrashIcon, UploadIcon } from "./Icons";
 import { ShareAppLink } from "./ShareAppLink";
 import type { AttendanceState, ThemeMode } from "../types/attendance";
+import { supportsHaptics } from "../utils/haptics";
 
 interface SettingsSheetProps {
   open: boolean;
@@ -106,7 +107,11 @@ export const SettingsSheet = ({
           <div className="space-y-3">
             <ToggleRow
               label="Haptics"
-              description="Use subtle vibration feedback when status changes."
+              description={
+                supportsHaptics()
+                  ? "Vibrate when attendance status changes (Android)."
+                  : "Haptics need Android — not supported on this device."
+              }
               checked={state.settings.hapticsEnabled}
               onChange={(value) => onUpdateSettings({ hapticsEnabled: value })}
             />

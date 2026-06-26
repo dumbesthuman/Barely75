@@ -1,4 +1,4 @@
-import { AnimatePresence, LayoutGroup, MotionConfig, motion } from "framer-motion";
+import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AddSubjectSheet } from "../components/AddSubjectSheet";
 import { AnalyticsCards } from "../components/AnalyticsCards";
@@ -14,11 +14,13 @@ import { SubjectCards } from "../components/SubjectCards";
 import { ScheduleView } from "../components/ScheduleView";
 import { SadCollegeModal } from "../components/SadCollegeModal";
 import { createEmptySemesterPeriods } from "../constants/seed";
+import { APP_NAME, THEME_COLOR_DARK, THEME_COLOR_LIGHT } from "../constants/app";
 import { GENTLE_SPRING } from "../constants/motion";
 import { useAttendance } from "../hooks/useAttendance";
+import { useAppBackNavigation } from "../hooks/useAppBackNavigation";
 import type { AttendanceState, ScheduleSlot, ThemeMode } from "../types/attendance";
 import { formatFullDate } from "../utils/date";
-import { vibrateForStatus } from "../utils/haptics";
+import { vibrateClear, vibrateForStatus } from "../utils/haptics";
 import { SettingsIcon } from "../components/Icons";
 
 const scheduleFingerprint = (slots: ScheduleSlot[]) =>
@@ -93,24 +95,58 @@ export const Dashboard = () => {
     const documentTheme = themeForDocument(state.settings.themeMode);
     document.documentElement.dataset.theme = documentTheme;
     document.documentElement.dataset.contrast = state.settings.highContrast ? "high" : "default";
+
+    const themeColor = documentTheme === "dark" ? THEME_COLOR_DARK : THEME_COLOR_LIGHT;
+    document.querySelector('meta[name="theme-color"]:not([media])')?.remove();
+    let themeMeta = document.querySelector('meta[name="theme-color"][data-app-theme]');
+    if (!themeMeta) {
+      themeMeta = document.createElement("meta");
+      themeMeta.setAttribute("name", "theme-color");
+      themeMeta.setAttribute("data-app-theme", "true");
+      document.head.appendChild(themeMeta);
+    }
+    themeMeta.setAttribute("content", themeColor);
   }, [state.settings.highContrast, state.settings.themeMode]);
 
   const handleCycle = useCallback(
     (periodId: string, currentStatus: AttendanceState["periods"][number]["status"]) => {
       const nextStatus = currentStatus === "PRESENT" ? "ABSENT" : "PRESENT";
-      dispatch({ type: "cycle-period", periodId });
       vibrateForStatus(nextStatus, state.settings.hapticsEnabled);
+      dispatch({ type: "cycle-period", periodId });
     },
     [dispatch, state.settings.hapticsEnabled],
   );
 
-  const handleCancel = useCallback(
+  const handleClear = useCallback(
     (periodId: string) => {
-      dispatch({ type: "cancel-period", periodId });
-      vibrateForStatus("CANCELLED", state.settings.hapticsEnabled);
+      vibrateClear(state.settings.hapticsEnabled);
+      dispatch({ type: "clear-period", periodId });
     },
     [dispatch, state.settings.hapticsEnabled],
   );
+
+  const closeSettings = useCallback(() => setSettingsOpen(false), []);
+  const closeAddSubject = useCallback(() => {
+    setAddSubjectOpen(false);
+    setWeekendAddContext(null);
+  }, []);
+  const closeEditSubject = useCallback(() => setEditSubjectId(null), []);
+  const closeSadModal = useCallback(() => setSadModalDate(null), []);
+
+  const { navigateTab, pushLayer, closeWithHistory } = useAppBackNavigation({
+    state: {
+      activeTab,
+      settingsOpen,
+      addSubjectOpen,
+      editSubjectId,
+      sadModalDate,
+    },
+    setActiveTab,
+    closeSettings,
+    closeAddSubject,
+    closeEditSubject,
+    closeSadModal,
+  });
 
   const handleAdjustTarget = useCallback(
     (subjectId: string, nextTarget: number) => {
@@ -163,9 +199,10 @@ export const Dashboard = () => {
       setScheduleDate(dateIso);
       if (!alreadyMarked) {
         setSadModalDate(dateIso);
+        pushLayer();
       }
     },
-    [dispatch, state.weekendCollegeDays, todayIso],
+    [dispatch, pushLayer, state.weekendCollegeDays, todayIso],
   );
 
   const handleSaveSubjectEdit = useCallback(
@@ -229,7 +266,7 @@ export const Dashboard = () => {
             onConfirmWeekendCollege={handleConfirmWeekendCollege}
             periods={getPeriodsForDate(scheduleDate)}
             onCycle={handleCycle}
-            onCancel={handleCancel}
+            onClear={handleClear}
           />
         );
       case "subjects":
@@ -237,9 +274,15 @@ export const Dashboard = () => {
           <SubjectCards
             subjects={subjectMetrics}
             onAdjustTarget={handleAdjustTarget}
-            onEdit={setEditSubjectId}
+            onEdit={(subjectId) => {
+              pushLayer();
+              setEditSubjectId(subjectId);
+            }}
             onDelete={handleDeleteSubject}
-            onAddSubject={() => setAddSubjectOpen(true)}
+            onAddSubject={() => {
+              pushLayer();
+              setAddSubjectOpen(true);
+            }}
           />
         );
       case "overview":
@@ -265,12 +308,13 @@ export const Dashboard = () => {
   }, [
     activeTab,
     handleAdjustTarget,
-    handleCancel,
+    handleClear,
     handleCycle,
     handleConfirmWeekendCollege,
     handleDeleteSubject,
     overallMetrics,
     prediction,
+    pushLayer,
     scheduleDate,
     getPeriodsForDate,
     state.subjects.length,
@@ -281,13 +325,13 @@ export const Dashboard = () => {
 
   return (
     <MotionConfig reducedMotion={state.settings.reducedMotion ? "always" : "user"}>
-      <LayoutGroup>
-        <div className="app-shell mx-auto min-h-dvh max-w-[430px] px-4 pb-40 pt-safe-top">
-          <header className="flex items-start justify-between gap-4 px-1 pb-5 pt-4">
+      <div className="app-root mx-auto min-h-dvh max-w-[430px]">
+        <div className="app-shell px-4">
+          <header className="flex items-start justify-between gap-4 px-1 pb-5 pt-3">
             <div className="min-w-0">
               <p className="text-sm text-[var(--color-text-secondary)]">{formatFullDate(todayIso)}</p>
               <h1 className="mt-3 max-w-[8ch] text-[clamp(2.6rem,10vw,3.5rem)] font-semibold leading-[0.92] tracking-[-0.04em]">
-                Attendance Tracker
+                {APP_NAME}
               </h1>
               <p className="mt-3 max-w-xs text-sm leading-6 text-[var(--color-text-secondary)]">
                 Track attendance, manage your timetable, and share the app with classmates.
@@ -296,7 +340,10 @@ export const Dashboard = () => {
             <button
               type="button"
               className="focus-ring mt-1 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface-elevated)] text-[var(--color-text-primary)]"
-              onClick={() => setSettingsOpen(true)}
+              onClick={() => {
+                pushLayer();
+                setSettingsOpen(true);
+              }}
               aria-label="Open settings"
             >
               <SettingsIcon className="h-5 w-5" />
@@ -306,25 +353,32 @@ export const Dashboard = () => {
           <AnimatePresence mode="wait">
             <motion.main
               key={activeTab}
-              className="space-y-4"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={GENTLE_SPRING}
+              className="app-main space-y-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18 }}
             >
               {activeTab === "overview" ? <InstallPrompt /> : null}
               {screen}
             </motion.main>
           </AnimatePresence>
+        </div>
 
-          <FloatingAddSubjectButton onClick={() => setAddSubjectOpen(true)} />
-          <BottomNavigation activeTab={activeTab} onChange={setActiveTab} />
+        <div className="app-chrome">
+          <FloatingAddSubjectButton
+            onClick={() => {
+              pushLayer();
+              setAddSubjectOpen(true);
+            }}
+          />
+          <BottomNavigation activeTab={activeTab} onChange={navigateTab} />
         </div>
 
         <SettingsSheet
           open={settingsOpen}
           state={state}
-          onClose={() => setSettingsOpen(false)}
+          onClose={() => closeWithHistory(closeSettings)}
           onThemeChange={handleThemeChange}
           onUpdateSettings={handleSettingsPatch}
           onApplyDefaultTarget={handleApplyDefaultTarget}
@@ -341,7 +395,7 @@ export const Dashboard = () => {
           open={editSubjectId !== null}
           subject={editingSubject}
           scheduleSlots={editingSchedule}
-          onClose={() => setEditSubjectId(null)}
+          onClose={() => closeWithHistory(closeEditSubject)}
           onSave={handleSaveSubjectEdit}
         />
 
@@ -349,10 +403,7 @@ export const Dashboard = () => {
           open={addSubjectOpen}
           defaultTarget={state.settings.defaultTargetAttendance}
           weekendContext={weekendAddContext ? { dateIso: weekendAddContext } : undefined}
-          onClose={() => {
-            setAddSubjectOpen(false);
-            setWeekendAddContext(null);
-          }}
+          onClose={() => closeWithHistory(closeAddSubject)}
           onAddSubject={({ subject, scheduleSlots }) => {
             dispatch({
               type: "add-subject",
@@ -367,15 +418,16 @@ export const Dashboard = () => {
         <SadCollegeModal
           open={sadModalDate !== null}
           dateIso={sadModalDate ?? todayIso}
-          onClose={() => setSadModalDate(null)}
+          onClose={() => closeWithHistory(closeSadModal)}
           onAddSubjects={() => {
             if (sadModalDate) {
               setWeekendAddContext(sadModalDate);
+              pushLayer();
               setAddSubjectOpen(true);
             }
           }}
         />
-      </LayoutGroup>
+      </div>
     </MotionConfig>
   );
 };
