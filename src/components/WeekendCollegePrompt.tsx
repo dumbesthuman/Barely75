@@ -19,7 +19,7 @@ export const WeekendCollegePrompt = ({
     <>
       <section className="native-card px-4 py-4">
         <p className="text-sm font-medium">It&apos;s {formatWeekday(dateIso)} — college today?</p>
-        <p className="mt-1 text-sm leading-6 text-[var(--color-text-secondary)]">
+        <p className="mt-1 text-sm leading-6 text-secondary">
           Weekends are usually off. Only add classes if something is actually scheduled.
         </p>
         <div className="mt-3 grid grid-cols-2 gap-2">
@@ -39,7 +39,7 @@ export const WeekendCollegePrompt = ({
         description="Only mark this if classes are actually happening."
       >
         <div className="space-y-4">
-          <p className="text-sm leading-6 text-[var(--color-text-secondary)]">
+          <p className="text-sm leading-6 text-secondary">
             Confirm college on <strong>{formatFullDate(dateIso)}</strong>?
           </p>
           <div className="grid gap-2">

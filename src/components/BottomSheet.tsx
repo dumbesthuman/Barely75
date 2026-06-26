@@ -35,18 +35,18 @@ export const BottomSheet = ({
           role="dialog"
           aria-modal="true"
           aria-label={title}
-          className="sheet-panel mx-auto w-full max-w-[430px]"
+          className="sheet-panel mx-auto w-full max-w-layout"
           initial={{ y: "110%", scale: 0.98 }}
           animate={{ y: 0, scale: 1 }}
           exit={{ y: "110%", scale: 0.98 }}
           transition={SHEET_SPRING}
         >
-          <div className="mx-auto mb-5 h-1.5 w-14 rounded-full bg-[var(--color-divider)]" />
+          <div className="mx-auto mb-5 h-1.5 w-14 rounded-full bg-divider" />
           <div className="flex items-start justify-between gap-4">
             <div>
               <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
               {description ? (
-                <p className="mt-2 text-sm leading-6 text-[var(--color-text-secondary)]">{description}</p>
+                <p className="mt-2 text-sm leading-6 text-secondary">{description}</p>
               ) : null}
             </div>
             {headerAction}

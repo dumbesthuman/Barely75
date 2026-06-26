@@ -57,13 +57,13 @@ export const SettingsSheet = ({
           </div>
           <div className="native-card px-4 py-4">
             <div className="flex items-center justify-between gap-3">
-              <span className="text-sm text-[var(--color-text-secondary)]">Default target</span>
+              <span className="text-sm text-secondary">Default target</span>
               <span className="text-lg font-semibold tabular-nums">
                 {state.settings.defaultTargetAttendance}%
               </span>
             </div>
             <input
-              className="mt-4 w-full accent-[var(--color-primary)]"
+              className="mt-4 w-full accent-primary"
               type="range"
               min={60}
               max={95}
@@ -222,7 +222,7 @@ const ToggleRow = ({ label, description, checked, onChange }: ToggleRowProps) =>
   <label className="native-card flex cursor-pointer items-center justify-between gap-4 px-4 py-4">
     <div>
       <p className="font-medium">{label}</p>
-      <p className="mt-1 text-sm leading-6 text-[var(--color-text-secondary)]">{description}</p>
+      <p className="mt-1 text-sm leading-6 text-secondary">{description}</p>
     </div>
     <span
       className={`toggle-switch ${checked ? "is-active" : ""}`}

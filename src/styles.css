@@ -234,6 +234,34 @@ button {
   box-shadow: var(--shadow-soft);
 }
 
+.text-secondary {
+  color: var(--color-text-secondary);
+}
+
+.text-primary {
+  color: var(--color-text-primary);
+}
+
+.bg-divider {
+  background-color: var(--color-divider);
+}
+
+.bg-surface-elevated {
+  background-color: var(--color-surface-elevated);
+}
+
+.border-border {
+  border-color: var(--color-border);
+}
+
+.accent-primary {
+  accent-color: var(--color-primary);
+}
+
+.max-w-layout {
+  max-width: min(430px, calc(100vw - 1rem));
+}
+
 .native-nav {
   position: fixed;
   left: 50%;

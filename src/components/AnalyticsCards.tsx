@@ -30,11 +30,11 @@ export const AnalyticsCards = ({ metrics }: AnalyticsCardsProps) => (
         animate={{ opacity: 1, y: 0 }}
         transition={{ ...GENTLE_SPRING, delay: index * 0.04 }}
       >
-        <p className="text-xs uppercase tracking-[0.22em] text-[var(--color-text-secondary)]">
+        <p className="text-xs uppercase tracking-[0.22em] text-secondary">
           {card.label}
         </p>
         <AnimatedNumber value={card.value} className="mt-3 text-[2rem] font-semibold tracking-tight" />
-        <p className="mt-2 text-sm leading-5 text-[var(--color-text-secondary)]">{card.caption}</p>
+        <p className="mt-2 text-sm leading-5 text-secondary">{card.caption}</p>
       </motion.article>
     ))}
   </div>

@@ -24,7 +24,7 @@ export const BottomNavigation = ({ activeTab, onChange }: BottomNavigationProps)
           key={tab.id}
           type="button"
           className={`relative flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-[22px] px-2 py-3 text-[0.72rem] ${
-            active ? "bg-[var(--color-surface-elevated)]" : ""
+            active ? "bg-surface-elevated" : ""
           }`}
           onClick={() => onChange(tab.id)}
           aria-current={active ? "page" : undefined}

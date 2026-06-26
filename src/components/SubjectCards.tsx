@@ -35,7 +35,7 @@ export const SubjectCards = ({
           animate={{ opacity: 1, y: 0 }}
           transition={GENTLE_SPRING}
         >
-          <p className="text-sm leading-6 text-[var(--color-text-secondary)]">
+          <p className="text-sm leading-6 text-secondary">
             No subjects yet. Tap the button below or use the + button to add your first course with its weekly
             timetable.
           </p>
@@ -71,10 +71,10 @@ export const SubjectCards = ({
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <h3 className="text-lg font-medium tracking-tight">{subject.name}</h3>
-                  <p className="mt-1 text-sm text-[var(--color-text-secondary)]">{subject.teacher}</p>
+                  <p className="mt-1 text-sm text-secondary">{subject.teacher}</p>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
-                  <div className="rounded-full bg-[var(--color-surface-elevated)] px-3 py-1 text-sm tabular-nums text-[var(--color-text-secondary)]">
+                  <div className="rounded-full bg-surface-elevated px-3 py-1 text-sm tabular-nums text-secondary">
                     {metrics.attendanceRate.toFixed(1)}%
                   </div>
                   <button
@@ -109,7 +109,7 @@ export const SubjectCards = ({
                 </p>
               ) : null}
 
-              <div className="mt-4 h-2 rounded-full bg-[var(--color-divider)]">
+              <div className="mt-4 h-2 rounded-full bg-divider">
                 <motion.div
                   className="h-full rounded-full"
                   animate={{
@@ -125,7 +125,7 @@ export const SubjectCards = ({
 
               <div className="mt-4 flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.24em] text-[var(--color-text-secondary)]">
+                  <p className="text-xs uppercase tracking-[0.24em] text-secondary">
                     Target
                   </p>
                   <p className="mt-1 text-xl font-semibold tabular-nums">{subject.targetAttendance}%</p>
@@ -150,7 +150,7 @@ export const SubjectCards = ({
                 </div>
               </div>
 
-              <p className="mt-4 text-sm leading-6 text-[var(--color-text-secondary)]">
+              <p className="mt-4 text-sm leading-6 text-secondary">
                 {getPredictionMessage(metrics)}
               </p>
             </motion.article>

@@ -37,10 +37,10 @@ export const SadCollegeModal = ({ open, dateIso, onClose, onAddSubjects }: SadCo
         <h2 id="sad-college-title" className="mt-4 text-xl font-semibold tracking-tight">
           That&apos;s rough.
         </h2>
-        <p className="mt-3 text-sm leading-6 text-[var(--color-text-secondary)]">
+        <p className="mt-3 text-sm leading-6 text-secondary">
           College on {formatFullDate(dateIso)}? We feel your pain. Weekends were supposed to be sacred.
         </p>
-        <p className="mt-2 text-sm leading-6 text-[var(--color-text-secondary)]">
+        <p className="mt-2 text-sm leading-6 text-secondary">
           At least let&apos;s get your subjects on the schedule so you can track attendance.
         </p>
         <div className="mt-5 grid gap-2">

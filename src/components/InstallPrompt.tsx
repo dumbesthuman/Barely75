@@ -74,7 +74,7 @@ export const InstallPrompt = () => {
         </span>
         <div className="min-w-0 flex-1">
           <p className="font-medium">Install on your phone</p>
-          <p className="mt-1 text-sm leading-6 text-[var(--color-text-secondary)]">
+          <p className="mt-1 text-sm leading-6 text-secondary">
             {deferredPrompt
               ? `Add ${APP_NAME} to your home screen for offline access and a full-screen app experience.`
               : "On iPhone or iPad, tap Share in Safari, then choose Add to Home Screen."}

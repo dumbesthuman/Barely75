@@ -295,7 +295,7 @@ export const Dashboard = () => {
       default:
         return state.subjects.length === 0 ? (
           <motion.div
-            className="native-card px-5 py-6 text-sm leading-6 text-[var(--color-text-secondary)]"
+            className="native-card px-5 py-6 text-sm leading-6 text-secondary"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={GENTLE_SPRING}
@@ -335,22 +335,22 @@ export const Dashboard = () => {
 
   return (
     <MotionConfig reducedMotion={state.settings.reducedMotion ? "always" : "user"}>
-      <div className="app-root mx-auto w-full min-h-dvh max-w-[430px]">
+      <div className="app-root mx-auto w-full min-h-dvh max-w-layout">
         <TabTransitionAura activeTab={activeTab} />
         <div className="app-shell px-4">
           <header className="flex items-start justify-between gap-4 px-1 pb-5 pt-3">
             <div className="min-w-0">
-              <p className="text-sm text-[var(--color-text-secondary)]">{formatFullDate(todayIso)}</p>
+              <p className="text-sm text-secondary">{formatFullDate(todayIso)}</p>
               <h1 className="mt-3 max-w-[8ch] text-[clamp(2.6rem,10vw,3.5rem)] font-bold leading-[0.92] tracking-[-0.04em]" style={{ fontFamily: "var(--font-display)" }}>
                 {APP_NAME}
               </h1>
-              <p className="mt-3 max-w-xs text-sm leading-6 text-[var(--color-text-secondary)]">
+              <p className="mt-3 max-w-xs text-sm leading-6 text-secondary">
                 Track attendance, manage your timetable, and share the app with classmates.
               </p>
             </div>
             <button
               type="button"
-              className="focus-ring mt-1 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface-elevated)] text-[var(--color-text-primary)]"
+              className="focus-ring mt-1 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-surface-elevated text-primary"
               onClick={() => {
                 pushLayer();
                 setSettingsOpen(true);

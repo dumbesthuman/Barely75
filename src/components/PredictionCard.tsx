@@ -26,7 +26,7 @@ export const PredictionCard = ({ metrics, prediction }: PredictionCardProps) => 
         <SparkIcon className="h-5 w-5" />
       </div>
       <div className="space-y-2">
-        <p className="text-sm text-[var(--color-text-secondary)]">Prediction</p>
+        <p className="text-sm text-secondary">Prediction</p>
         <p className="text-lg font-medium leading-7">{prediction}</p>
       </div>
     </motion.section>

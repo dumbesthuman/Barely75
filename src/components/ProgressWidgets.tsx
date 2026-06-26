@@ -52,12 +52,12 @@ export const ProgressWidgets = ({ subjects }: ProgressWidgetsProps) => {
           >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.24em] text-[var(--color-text-secondary)]">
+                <p className="text-xs uppercase tracking-[0.24em] text-secondary">
                   {widget.label}
                 </p>
                 <p className="mt-2 text-2xl font-semibold tabular-nums tracking-tight">{widget.value}</p>
               </div>
-              <p className="max-w-none text-sm leading-6 text-[var(--color-text-secondary)] sm:max-w-32 sm:text-right">
+              <p className="max-w-none text-sm leading-6 text-secondary sm:max-w-32 sm:text-right">
                 {widget.copy}
               </p>
             </div>

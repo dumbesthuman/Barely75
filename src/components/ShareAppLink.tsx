@@ -48,7 +48,7 @@ export const ShareAppLink = () => {
         <p>Send this link to install on any phone</p>
       </div>
       <div className="native-card px-4 py-4">
-        <p className="break-all text-sm leading-6 text-[var(--color-text-secondary)]">{appUrl}</p>
+        <p className="break-all text-sm leading-6 text-secondary">{appUrl}</p>
         <button type="button" className="secondary-button mt-4 w-full" onClick={() => void copyLink()}>
           {copied ? <CheckIcon className="h-4 w-4" /> : <LinkIcon className="h-4 w-4" />}
           {copied ? "Link copied" : "Copy share link"}

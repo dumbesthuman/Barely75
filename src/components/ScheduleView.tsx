@@ -86,11 +86,11 @@ export const ScheduleView = ({
           </button>
 
           <div className="min-w-0 flex-1 px-1 text-center">
-            <p className="text-xs uppercase tracking-[0.24em] text-[var(--color-text-secondary)]">
+            <p className="text-xs uppercase tracking-[0.24em] text-secondary">
               {getDayOffsetLabel(selectedDate, todayIso)}
             </p>
             <p className="mt-1 text-base font-semibold tracking-tight">{formatFullDate(selectedDate)}</p>
-            <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
+            <p className="mt-1 text-xs text-secondary">
               {formatWeekday(selectedDate)} · {formatCompactDate(selectedDate)}
               {isMarkedWeekend ? " · weekend class" : isWeekend ? " · weekend" : ""}
             </p>
@@ -138,7 +138,7 @@ export const ScheduleView = ({
           </div>
 
           {isFuture ? (
-            <p className="px-1 text-sm leading-6 text-[var(--color-text-secondary)]">
+            <p className="px-1 text-sm leading-6 text-secondary">
               Preview only. You can mark attendance once the day arrives.
             </p>
           ) : null}
@@ -146,7 +146,7 @@ export const ScheduleView = ({
           {periods.length === 0 ? (
             <motion.div
               key={selectedDate}
-              className="native-card px-5 py-6 text-sm leading-6 text-[var(--color-text-secondary)]"
+              className="native-card px-5 py-6 text-sm leading-6 text-secondary"
               initial={{ opacity: 0, y: direction === 0 ? 10 : direction > 0 ? 14 : -14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={GENTLE_SPRING}

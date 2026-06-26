@@ -32,7 +32,7 @@ export const AttendanceRing = ({ metrics }: AttendanceRingProps) => {
       </div>
       <div className="relative flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs uppercase tracking-[0.24em] text-[var(--color-text-secondary)]">
+          <p className="text-xs uppercase tracking-[0.24em] text-secondary">
             Current standing
           </p>
           <h2 className="mt-2 text-[1.9rem] font-semibold leading-[1.02] tracking-tight">
@@ -40,7 +40,7 @@ export const AttendanceRing = ({ metrics }: AttendanceRingProps) => {
           </h2>
         </div>
         <div className="rounded-full bg-[color:var(--color-surface-elevated)] px-3 py-2 text-right">
-          <p className="text-[0.7rem] uppercase tracking-[0.22em] text-[var(--color-text-secondary)]">
+          <p className="text-[0.7rem] uppercase tracking-[0.22em] text-secondary">
             Target
           </p>
           <p className="mt-1 text-base font-semibold tabular-nums">{metrics.targetAttendance}%</p>
@@ -79,7 +79,7 @@ export const AttendanceRing = ({ metrics }: AttendanceRingProps) => {
               decimals={1}
               className="text-4xl font-semibold tracking-tight"
             />
-            <span className="mt-1 text-xs uppercase tracking-[0.24em] text-[var(--color-text-secondary)]">
+            <span className="mt-1 text-xs uppercase tracking-[0.24em] text-secondary">
               Attendance
             </span>
           </div>
@@ -88,7 +88,7 @@ export const AttendanceRing = ({ metrics }: AttendanceRingProps) => {
         <div className="min-w-0 flex-1 text-center sm:text-left">
           <div className="mx-auto grid max-w-sm grid-cols-2 gap-3 sm:mx-0">
             <div className="rounded-[22px] bg-[color:var(--color-surface-elevated)] px-4 py-3">
-              <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[var(--color-text-secondary)]">
+              <p className="text-[0.72rem] uppercase tracking-[0.22em] text-secondary">
                 {progress >= metrics.targetAttendance ? "Safe bunks" : "Need next"}
               </p>
               <p className="mt-2 text-2xl font-semibold tabular-nums">
@@ -96,13 +96,13 @@ export const AttendanceRing = ({ metrics }: AttendanceRingProps) => {
               </p>
             </div>
             <div className="rounded-[22px] bg-[color:var(--color-surface-elevated)] px-4 py-3">
-              <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[var(--color-text-secondary)]">
+              <p className="text-[0.72rem] uppercase tracking-[0.22em] text-secondary">
                 Missed
               </p>
               <p className="mt-2 text-2xl font-semibold tabular-nums">{metrics.absent}</p>
             </div>
           </div>
-          <p className="mx-auto mt-4 max-w-xs text-sm leading-6 text-[var(--color-text-secondary)] sm:mx-0">
+          <p className="mx-auto mt-4 max-w-xs text-sm leading-6 text-secondary sm:mx-0">
             {progress >= metrics.targetAttendance
               ? `You are ${Math.max(0, progress - metrics.targetAttendance).toFixed(1)} points above your target.`
               : `You are ${(metrics.targetAttendance - progress).toFixed(1)} points below your target.`}
