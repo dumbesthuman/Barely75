@@ -14,12 +14,14 @@ import { SettingsSheet } from "../components/SettingsSheet";
 import { SubjectCards } from "../components/SubjectCards";
 import { ScheduleView } from "../components/ScheduleView";
 import { SadCollegeModal } from "../components/SadCollegeModal";
+import { ToastContainer } from "../components/ToastContainer";
 import { createEmptySemesterPeriods } from "../constants/seed";
 import { APP_NAME, THEME_COLOR_DARK, THEME_COLOR_LIGHT } from "../constants/app";
 import { GENTLE_SPRING } from "../constants/motion";
 import { useAttendance } from "../hooks/useAttendance";
 import { useAppBackNavigation } from "../hooks/useAppBackNavigation";
-import type { AttendanceState, ScheduleSlot, ThemeMode } from "../types/attendance";
+import { useToast } from "../hooks/useToast";
+import type { AttendanceState, PeriodStatus, ScheduleSlot, ThemeMode } from "../types/attendance";
 import { formatFullDate } from "../utils/date";
 import { vibrateClear, vibrateForStatus } from "../utils/haptics";
 import { SettingsIcon } from "../components/Icons";
@@ -63,6 +65,7 @@ export const Dashboard = () => {
     subjectMetrics,
     todayIso,
     getPeriodsForDate,
+    streakData,
   } = useAttendance();
   const [activeTab, setActiveTab] = useState<NavigationTab>("overview");
   const [scheduleDate, setScheduleDate] = useState(todayIso);
@@ -71,6 +74,7 @@ export const Dashboard = () => {
   const [editSubjectId, setEditSubjectId] = useState<string | null>(null);
   const [weekendAddContext, setWeekendAddContext] = useState<string | null>(null);
   const [sadModalDate, setSadModalDate] = useState<string | null>(null);
+  const { toasts, addToast, removeToast } = useToast();
 
   const editingSubject = useMemo(
     () => state.subjects.find((subject) => subject.id === editSubjectId) ?? null,
@@ -126,6 +130,23 @@ export const Dashboard = () => {
     [dispatch, state.settings.hapticsEnabled],
   );
 
+  const handleSetNote = useCallback(
+    (periodId: string, note: string) => {
+      dispatch({ type: "set-period-note", periodId, note });
+    },
+    [dispatch],
+  );
+
+  const handleBulkMark = useCallback(
+    (dateIso: string, status: PeriodStatus) => {
+      dispatch({ type: "mark-all-periods-for-date", dateIso, status });
+      if (status === "PRESENT") addToast("All classes marked present ✓", "success");
+      else if (status === "ABSENT") addToast("All classes marked absent", "info");
+      else addToast("All marks cleared", "info");
+    },
+    [dispatch, addToast],
+  );
+
   const closeSettings = useCallback(() => setSettingsOpen(false), []);
   const closeAddSubject = useCallback(() => {
     setAddSubjectOpen(false);
@@ -172,26 +193,32 @@ export const Dashboard = () => {
 
   const handleApplyDefaultTarget = useCallback(() => {
     dispatch({ type: "apply-default-target" });
-  }, [dispatch]);
+    addToast("Default target applied to all subjects", "success");
+  }, [dispatch, addToast]);
 
   const handleResetSemester = useCallback(() => {
     dispatch({ type: "reset-semester", startDate: todayIso });
-  }, [dispatch, todayIso]);
+    addToast("Semester reset — all records cleared", "info");
+  }, [dispatch, todayIso, addToast]);
 
   const handleDeleteSubject = useCallback(
     (subjectId: string) => {
+      const subject = state.subjects.find((s) => s.id === subjectId);
       dispatch({ type: "delete-subject", subjectId });
+      if (subject) addToast(`${subject.name} deleted`, "info");
     },
-    [dispatch],
+    [dispatch, state.subjects, addToast],
   );
 
   const handleLoadSampleData = useCallback(() => {
     dispatch({ type: "load-sample-data", anchorDate: todayIso });
-  }, [dispatch, todayIso]);
+    addToast("Demo timetable loaded!", "success");
+  }, [dispatch, todayIso, addToast]);
 
   const handleClearAllSubjects = useCallback(() => {
     dispatch({ type: "clear-all-subjects" });
-  }, [dispatch]);
+    addToast("All subjects cleared", "info");
+  }, [dispatch, addToast]);
 
   const handleSkipWeekend = useCallback(() => {
     setScheduleDate(todayIso);
@@ -231,8 +258,9 @@ export const Dashboard = () => {
           anchorDate: todayIso,
         });
       }
+      addToast("Subject updated", "success");
     },
-    [dispatch, state.schedule, todayIso],
+    [dispatch, state.schedule, todayIso, addToast],
   );
 
   const exportState = () => {
@@ -243,6 +271,7 @@ export const Dashboard = () => {
     anchor.download = `attendance-tracker-${todayIso}.json`;
     anchor.click();
     URL.revokeObjectURL(url);
+    addToast("Data exported successfully!", "success");
   };
 
   const importState = async (file: File) => {
@@ -250,14 +279,22 @@ export const Dashboard = () => {
       const text = await file.text();
       const parsed = JSON.parse(text) as unknown;
       if (!isImportableState(parsed)) {
+        addToast("Invalid file — couldn't import data", "error");
         return;
       }
 
       dispatch({ type: "import-state", state: parsed });
+      addToast("Data imported successfully!", "success");
     } catch {
-      return;
+      addToast("Failed to read file — is it valid JSON?", "error");
     }
   };
+
+  // Existing subject colors for auto-color picking
+  const existingSubjectColors = useMemo(
+    () => state.subjects.map((s) => s.color),
+    [state.subjects],
+  );
 
   const screen = useMemo(() => {
     switch (activeTab) {
@@ -273,6 +310,8 @@ export const Dashboard = () => {
             periods={getPeriodsForDate(scheduleDate)}
             onCycle={handleCycle}
             onClear={handleClear}
+            onSetNote={handleSetNote}
+            onBulkMark={handleBulkMark}
           />
         );
       case "subjects":
@@ -307,7 +346,7 @@ export const Dashboard = () => {
             <AttendanceRing metrics={overallMetrics} />
             <AnalyticsCards metrics={overallMetrics} />
             <PredictionCard metrics={overallMetrics} prediction={prediction} />
-            <ProgressWidgets subjects={subjectMetrics} />
+            <ProgressWidgets subjects={subjectMetrics} streakData={streakData} />
           </div>
         );
     }
@@ -316,6 +355,8 @@ export const Dashboard = () => {
     handleAdjustTarget,
     handleClear,
     handleCycle,
+    handleSetNote,
+    handleBulkMark,
     handleConfirmWeekendCollege,
     handleSkipWeekend,
     handleDeleteSubject,
@@ -327,6 +368,7 @@ export const Dashboard = () => {
     state.subjects.length,
     state.weekendCollegeDays,
     subjectMetrics,
+    streakData,
     todayIso,
   ]);
 
@@ -414,6 +456,7 @@ export const Dashboard = () => {
           open={addSubjectOpen}
           defaultTarget={state.settings.defaultTargetAttendance}
           weekendContext={weekendAddContext ? { dateIso: weekendAddContext } : undefined}
+          existingSubjectColors={existingSubjectColors}
           onClose={() => closeWithHistory(closeAddSubject)}
           onAddSubject={({ subject, scheduleSlots }) => {
             dispatch({
@@ -423,6 +466,7 @@ export const Dashboard = () => {
               periods: createEmptySemesterPeriods(scheduleSlots, new Date(`${todayIso}T12:00:00`)),
             });
             dispatch({ type: "ensure-period-window", anchorDate: todayIso });
+            addToast(`${subject.name} added!`, "success");
           }}
         />
 
@@ -438,6 +482,9 @@ export const Dashboard = () => {
             }
           }}
         />
+
+        {/* Toast notifications */}
+        <ToastContainer toasts={toasts} onRemove={removeToast} />
       </div>
     </MotionConfig>
   );

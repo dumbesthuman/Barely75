@@ -74,6 +74,7 @@ export const SettingsSheet = ({
               }
               aria-label="Default attendance target"
             />
+            <p className="mt-1 text-xs text-secondary">Range: 60% – 95%</p>
             <button type="button" className="secondary-button mt-4 w-full" onClick={onApplyDefaultTarget}>
               Apply to all subjects
             </button>
@@ -148,7 +149,20 @@ export const SettingsSheet = ({
               <UploadIcon className="h-4 w-4" />
               Import JSON
             </button>
-            <button type="button" className="secondary-button" onClick={onResetSemester}>
+            {/* Semester reset — now with confirmation dialog */}
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={() => {
+                if (
+                  window.confirm(
+                    "Reset semester? This will clear all attendance records and weekend markings, but keep your subjects and schedule. This cannot be undone.",
+                  )
+                ) {
+                  onResetSemester();
+                }
+              }}
+            >
               <RefreshIcon className="h-4 w-4" />
               Semester reset
             </button>

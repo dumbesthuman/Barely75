@@ -5,7 +5,7 @@ import type {
   ScheduleSlot,
   Subject,
 } from "../types/attendance";
-import { APP_STATE_VERSION, DEFAULT_SETTINGS } from "./app";
+import { APP_STATE_VERSION, DEFAULT_SETTINGS, SUBJECT_COLORS } from "./app";
 
 const SUBJECT_SEEDS: Subject[] = [
   {
@@ -13,36 +13,42 @@ const SUBJECT_SEEDS: Subject[] = [
     name: "Advanced Algorithms",
     teacher: "Dr. Priya Raman",
     targetAttendance: 78,
+    color: SUBJECT_COLORS[0],
   },
   {
     id: "distributed-systems",
     name: "Distributed Systems",
     teacher: "Prof. Neil D'Souza",
     targetAttendance: 75,
+    color: SUBJECT_COLORS[1],
   },
   {
     id: "machine-learning",
     name: "Machine Learning",
     teacher: "Dr. Kavya Menon",
     targetAttendance: 80,
+    color: SUBJECT_COLORS[2],
   },
   {
     id: "compiler-design",
     name: "Compiler Design",
     teacher: "Prof. Arjun Khanna",
     targetAttendance: 74,
+    color: SUBJECT_COLORS[3],
   },
   {
     id: "cloud-computing",
     name: "Cloud Computing",
     teacher: "Dr. Sana Iqbal",
     targetAttendance: 76,
+    color: SUBJECT_COLORS[4],
   },
   {
     id: "capstone-lab",
     name: "Capstone Lab",
     teacher: "Mentor Rhea Thomas",
     targetAttendance: 85,
+    color: SUBJECT_COLORS[5],
   },
 ];
 
@@ -112,7 +118,7 @@ export const ensurePeriodWindow = (
   schedule: ScheduleSlot[],
   anchorIso: string,
   weekendCollegeDays: string[] = [],
-  pastDays = 90,
+  pastDays = 150, // extended from 90 to 150 to cover more semester history
   futureDays = 60,
 ) => {
   const existingIds = new Set(periods.map((period) => period.id));

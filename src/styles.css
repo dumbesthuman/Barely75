@@ -479,3 +479,60 @@ button {
     padding-right: max(0.75rem, env(safe-area-inset-right, 0.75rem));
   }
 }
+
+/* ── Toast notifications ─────────────────────────────────────── */
+.toast-container {
+  position: fixed;
+  bottom: calc(max(6.5rem, env(safe-area-inset-bottom, 0px) + 5.5rem));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  pointer-events: none;
+  width: min(calc(100vw - 2rem), 22rem);
+}
+
+.toast-item {
+  pointer-events: auto;
+  width: 100%;
+  padding: 0.85rem 1.1rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: left;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(12px);
+}
+
+/* ── Subject color dot ───────────────────────────────────────── */
+.subject-color-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+/* ── Input validation states ─────────────────────────────────── */
+.input-field:focus {
+  outline: 2px solid color-mix(in srgb, var(--color-primary) 60%, transparent);
+  outline-offset: 0;
+  border-color: var(--color-primary);
+}
+
+/* ── Prevent overscroll color flash ──────────────────────────── */
+.app-main {
+  overscroll-behavior-y: none;
+}
+
+/* ── Touch button disabled state ─────────────────────────────── */
+.touch-button:disabled {
+  opacity: 0.35;
+  pointer-events: none;
+}
+

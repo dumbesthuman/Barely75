@@ -14,6 +14,7 @@ export type AttendanceAction =
   | { type: "set-period-status"; periodId: string; status: PeriodStatus }
   | { type: "clear-period"; periodId: string }
   | { type: "cancel-period"; periodId: string }
+  | { type: "set-period-note"; periodId: string; note: string }
   | { type: "add-subject"; subject: Subject; scheduleSlots: ScheduleSlot[]; periods: AttendanceState["periods"] }
   | { type: "update-subject"; subjectId: string; patch: Pick<Subject, "name" | "teacher" | "targetAttendance"> }
   | {
@@ -31,7 +32,8 @@ export type AttendanceAction =
   | { type: "reset-semester"; startDate: string }
   | { type: "ensure-period-window"; anchorDate: string }
   | { type: "mark-weekend-college"; dateIso: string; anchorDate: string }
-  | { type: "import-state"; state: AttendanceState };
+  | { type: "import-state"; state: AttendanceState }
+  | { type: "mark-all-periods-for-date"; dateIso: string; status: PeriodStatus };
 
 const clampTarget = (value: number) => Math.min(95, Math.max(60, Math.round(value)));
 
@@ -72,6 +74,7 @@ export const attendanceReducer = (
             ? {
                 ...period,
                 status: null,
+                note: undefined,
               }
             : period,
         ),
@@ -85,6 +88,27 @@ export const attendanceReducer = (
                 ...period,
                 status: "CANCELLED",
               }
+            : period,
+        ),
+      };
+    case "set-period-note":
+      return {
+        ...state,
+        periods: state.periods.map((period) =>
+          period.id === action.periodId
+            ? {
+                ...period,
+                note: action.note || undefined,
+              }
+            : period,
+        ),
+      };
+    case "mark-all-periods-for-date":
+      return {
+        ...state,
+        periods: state.periods.map((period) =>
+          period.date === action.dateIso
+            ? { ...period, status: action.status }
             : period,
         ),
       };
@@ -204,7 +228,7 @@ export const attendanceReducer = (
         subjects: state.subjects,
         schedule: state.schedule,
         periods: createEmptySemesterPeriods(state.schedule, new Date(`${action.startDate}T12:00:00`)),
-        weekendCollegeDays: state.weekendCollegeDays,
+        weekendCollegeDays: [], // fix: also clear weekend college days on reset
         settings: state.settings,
       };
     case "ensure-period-window":

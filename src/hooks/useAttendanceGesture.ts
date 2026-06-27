@@ -109,7 +109,7 @@ export const useAttendanceGesture = ({
         if (!isPressed) {
           return;
         }
-        if (Math.abs(event.movementX) > 10 || Math.abs(event.movementY) > 10) {
+        if (Math.abs(event.movementX) > 20 || Math.abs(event.movementY) > 20) {
           cancelPress();
         }
       },

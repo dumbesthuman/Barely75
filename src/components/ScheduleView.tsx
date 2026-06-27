@@ -1,7 +1,7 @@
-import { motion } from "framer-motion";
-import { useEffect, useMemo, useState } from "react";
+import { motion, useMotionValue, useTransform } from "framer-motion";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { GENTLE_SPRING } from "../constants/motion";
-import type { Period, ScheduleSlot, Subject } from "../types/attendance";
+import type { Period, PeriodStatus, ScheduleSlot, Subject } from "../types/attendance";
 import {
   addDaysToIso,
   compareIsoDates,
@@ -11,7 +11,7 @@ import {
   getDayOffsetLabel,
   isWeekendIso,
 } from "../utils/date";
-import { ChevronLeftIcon, ChevronRightIcon } from "./Icons";
+import { CheckAllIcon, ChevronLeftIcon, ChevronRightIcon, XIcon } from "./Icons";
 import { PeriodCard } from "./PeriodCard";
 import { WeekendCollegePrompt } from "./WeekendCollegePrompt";
 
@@ -25,6 +25,8 @@ interface ScheduleViewProps {
   periods: Array<Period & { slot: ScheduleSlot; subject: Subject }>;
   onCycle: (periodId: string, currentStatus: Period["status"]) => void;
   onClear: (periodId: string) => void;
+  onBulkMark?: (dateIso: string, status: PeriodStatus) => void;
+  onSetNote?: (periodId: string, note: string) => void;
 }
 
 export const ScheduleView = ({
@@ -37,8 +39,15 @@ export const ScheduleView = ({
   periods,
   onCycle,
   onClear,
+  onBulkMark,
+  onSetNote,
 }: ScheduleViewProps) => {
   const [direction, setDirection] = useState(0);
+  const dragX = useMotionValue(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const opacity = useTransform(dragX, [-80, 0, 80], [0.6, 1, 0.6]);
 
   const isToday = selectedDate === todayIso;
   const isFuture = compareIsoDates(selectedDate, todayIso) > 0;
@@ -55,7 +64,7 @@ export const ScheduleView = ({
       return "Weekend Schedule";
     }
     if (isToday) {
-      return "Today’s Schedule";
+      return "Today's Schedule";
     }
     if (isPast) {
       return "Past Schedule";
@@ -71,6 +80,24 @@ export const ScheduleView = ({
   useEffect(() => {
     setDirection(0);
   }, [selectedDate]);
+
+  // Swipe gesture: drag horizontally to navigate days
+  const handleDragEnd = (_: unknown, info: { offset: { x: number }; velocity: { x: number } }) => {
+    const threshold = 60;
+    const velocityThreshold = 400;
+    if (info.offset.x > threshold || info.velocity.x > velocityThreshold) {
+      moveByDay(-1); // swipe right = go to previous day
+    } else if (info.offset.x < -threshold || info.velocity.x < -velocityThreshold) {
+      moveByDay(1); // swipe left = go to next day
+    }
+    setIsDragging(false);
+    dragX.set(0);
+  };
+
+  // Bulk mark: only show on past/today and when periods exist
+  const canBulkMark = !isFuture && !isUnmarkedWeekend && periods.length > 0 && onBulkMark;
+  const allPresent = periods.length > 0 && periods.every((p) => p.status === "PRESENT");
+  const allAbsent = periods.length > 0 && periods.every((p) => p.status === "ABSENT");
 
   return (
     <section className="space-y-4">
@@ -139,9 +166,50 @@ export const ScheduleView = ({
 
           {isFuture ? (
             <p className="px-1 text-sm leading-6 text-secondary">
-              Preview only. You can mark attendance once the day arrives.
+              Preview only — attendance can be marked once the day arrives.
             </p>
           ) : null}
+
+          {/* Bulk mark controls */}
+          {canBulkMark && (
+            <motion.div
+              className="flex gap-2"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={GENTLE_SPRING}
+            >
+              <button
+                type="button"
+                className={`secondary-button flex-1 text-sm ${allPresent ? "ring-2 ring-[var(--color-success)]" : ""}`}
+                style={{ minHeight: 40 }}
+                onClick={() => onBulkMark!(selectedDate, "PRESENT")}
+                aria-label="Mark all present"
+              >
+                <CheckAllIcon className="h-3.5 w-3.5" />
+                All Present
+              </button>
+              <button
+                type="button"
+                className={`secondary-button flex-1 text-sm ${allAbsent ? "ring-2 ring-[var(--color-danger)]" : ""}`}
+                style={{ minHeight: 40 }}
+                onClick={() => onBulkMark!(selectedDate, "ABSENT")}
+                aria-label="Mark all absent"
+              >
+                <XIcon className="h-3.5 w-3.5" />
+                All Absent
+              </button>
+              <button
+                type="button"
+                className="secondary-button text-sm"
+                style={{ minHeight: 40, minWidth: 40, padding: "0 0.75rem" }}
+                onClick={() => onBulkMark!(selectedDate, null)}
+                aria-label="Clear all marks"
+                title="Clear all"
+              >
+                Reset
+              </button>
+            </motion.div>
+          )}
 
           {periods.length === 0 ? (
             <motion.div
@@ -158,9 +226,17 @@ export const ScheduleView = ({
                   : "Nothing was scheduled here. Browse other days or add subjects with weekly slots."}
             </motion.div>
           ) : (
+            // Swipeable container
             <motion.div
+              ref={containerRef}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.18}
+              style={{ x: dragX, opacity }}
+              onDragStart={() => setIsDragging(true)}
+              onDragEnd={handleDragEnd}
               key={selectedDate}
-              className="space-y-3"
+              className="space-y-3 cursor-grab active:cursor-grabbing"
               initial={{ opacity: 0, x: direction === 0 ? 0 : direction > 0 ? 18 : -18 }}
               animate={{ opacity: 1, x: 0 }}
               transition={GENTLE_SPRING}
@@ -179,6 +255,8 @@ export const ScheduleView = ({
                     readOnly={isFuture}
                     onCycle={onCycle}
                     onClear={onClear}
+                    onSetNote={onSetNote}
+                    isDragging={isDragging}
                   />
                 </motion.div>
               ))}

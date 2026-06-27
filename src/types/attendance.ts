@@ -7,6 +7,7 @@ export interface Subject {
   name: string;
   teacher: string;
   targetAttendance: number;
+  color?: string; // hex color for subject
 }
 
 export interface ScheduleSlot {
@@ -25,6 +26,7 @@ export interface Period {
   date: string;
   periodNumber: number;
   status: PeriodStatus;
+  note?: string; // optional absence/attendance note
 }
 
 export interface SettingsState {
@@ -59,4 +61,11 @@ export interface AttendanceMetrics {
 export interface SubjectWithMetrics {
   subject: Subject;
   metrics: AttendanceMetrics;
+  /** Attendance rate per day for the last 30 marked days (sparkline data) */
+  sparkline: number[];
+}
+
+export interface StreakData {
+  currentStreak: number; // consecutive days with ≥1 marked class
+  longestStreak: number;
 }

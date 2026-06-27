@@ -3,6 +3,7 @@ import { useAttendanceDispatch, useAttendanceState } from "../store/AttendanceCo
 import {
   buildOverallMetrics,
   buildPeriodsForDate,
+  buildStreakData,
   buildSubjectMetrics,
   buildTodayPeriods,
   getPredictionMessage,
@@ -19,6 +20,7 @@ export const useAttendance = () => {
   const subjectMetrics = useMemo(() => buildSubjectMetrics(state), [state]);
   const todayPeriods = useMemo(() => buildTodayPeriods(state, todayIso), [state, todayIso]);
   const prediction = useMemo(() => getPredictionMessage(overallMetrics), [overallMetrics]);
+  const streakData = useMemo(() => buildStreakData(state.periods, todayIso), [state.periods, todayIso]);
 
   const getPeriodsForDate = useMemo(
     () => (dateIso: string) => buildPeriodsForDate(state, dateIso),
@@ -34,5 +36,6 @@ export const useAttendance = () => {
     todayPeriods,
     getPeriodsForDate,
     prediction,
+    streakData,
   };
 };
