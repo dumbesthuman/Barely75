@@ -49,17 +49,9 @@ export const useAttendanceGesture = ({
     frameRef.current = window.requestAnimationFrame(updateProgress);
   });
 
-  const startPress = useEffectEvent((source: "touch" | "mouse" | "keyboard") => {
+  const startPress = useEffectEvent(() => {
     if (disabled) {
       return;
-    }
-
-    if (source === "mouse" && Date.now() - touchTimeRef.current < 800) {
-      return;
-    }
-
-    if (source === "touch") {
-      touchTimeRef.current = Date.now();
     }
 
     clearTracking();
@@ -101,12 +93,30 @@ export const useAttendanceGesture = ({
     isPressed,
     longPressProgress,
     gestureProps: {
-      onTouchStart: () => startPress("touch"),
-      onTouchEnd: endPress,
-      onTouchCancel: cancelPress,
-      onMouseDown: () => startPress("mouse"),
-      onMouseUp: endPress,
-      onMouseLeave: cancelPress,
+      onPointerDown: (event: React.PointerEvent<HTMLButtonElement>) => {
+        if (event.pointerType === "mouse" && event.button !== 0) {
+          return;
+        }
+        event.preventDefault();
+        event.currentTarget.setPointerCapture(event.pointerId);
+        startPress();
+      },
+      onPointerUp: (event: React.PointerEvent<HTMLButtonElement>) => {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+        endPress();
+      },
+      onPointerMove: (event: React.PointerEvent<HTMLButtonElement>) => {
+        if (!isPressed) {
+          return;
+        }
+        if (Math.abs(event.movementX) > 10 || Math.abs(event.movementY) > 10) {
+          cancelPress();
+        }
+      },
+      onPointerCancel: (event: React.PointerEvent<HTMLButtonElement>) => {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+        cancelPress();
+      },
       onContextMenu: (event: React.MouseEvent) => event.preventDefault(),
       onKeyDown: (event: React.KeyboardEvent) => {
         if (event.key === "Delete" || event.key === "Backspace") {
@@ -121,7 +131,7 @@ export const useAttendanceGesture = ({
 
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
-          startPress("keyboard");
+          startPress();
         }
       },
       onKeyUp: (event: React.KeyboardEvent) => {

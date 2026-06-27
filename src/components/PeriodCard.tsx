@@ -1,9 +1,8 @@
 import { memo } from "react";
 import { motion } from "framer-motion";
 import { useAttendanceGesture } from "../hooks/useAttendanceGesture";
-import { LONG_PRESS_DURATION } from "../constants/app";
-import { RefreshIcon } from "./Icons";
 import { GENTLE_SPRING, SPRING } from "../constants/motion";
+import { LONG_PRESS_DURATION } from "../constants/app";
 import type { Period, ScheduleSlot, Subject } from "../types/attendance";
 import { formatTimeRange } from "../utils/date";
 import { getStatusAccent, getStatusLabel } from "../utils/attendance";
@@ -50,19 +49,20 @@ export const PeriodCard = memo(
     const isAbsent = period.status === "ABSENT";
 
     return (
-      <motion.div
-        layout
-        className="native-card focus-ring relative w-full overflow-hidden px-5 py-5 text-left"
-        animate={{
-          scale: isPressed ? 0.985 : 1,
-          x: isAbsent ? [0, -3, 3, -2, 0] : 0,
-        }}
-        transition={SPRING}
-        role="button"
-        tabIndex={0}
-        aria-label={`${subject.name}, period ${slot.periodNumber}, ${getStatusLabel(period.status)}`}
-        {...gestureProps}
-      >
+      <div className="relative">
+        <motion.button
+          type="button"
+          layout
+          className="native-card focus-ring relative w-full overflow-hidden px-5 py-5 text-left"
+          style={{ touchAction: "none" }}
+          animate={{
+            scale: isPressed ? 0.985 : 1,
+            x: isAbsent ? [0, -3, 3, -2, 0] : 0,
+          }}
+          transition={SPRING}
+          aria-label={`${subject.name}, period ${slot.periodNumber}, ${getStatusLabel(period.status)}`}
+          {...gestureProps}
+        >
         <motion.div
           className="absolute inset-0"
           animate={{
@@ -123,7 +123,20 @@ export const PeriodCard = memo(
             </motion.div>
           </div>
         </div>
-      </motion.div>
+      </motion.button>
+      {period.status !== null && !readOnly ? (
+        <button
+          type="button"
+          className="absolute right-4 bottom-4 z-20 rounded-full border border-border bg-surface px-3 py-2 text-xs font-semibold text-primary shadow-sm transition hover:bg-surface-elevated focus-ring"
+          onClick={(event) => {
+            event.stopPropagation();
+            onClear(period.id);
+          }}
+        >
+          Reset
+        </button>
+      ) : null}
+      </div>
     );
   },
   (previous, next) =>
