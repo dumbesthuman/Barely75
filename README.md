@@ -1,50 +1,69 @@
-Short summary
+# Barely 75 — Attendance Tracker
 
-This project is a mobile-first attendance tracker that solves the problem of slow, error-prone manual attendance logging. It lets users mark presence quickly, reduces accidental changes during scrolling, and provides a clear reset path for corrections.
+A premium, mobile‑first PWA for fast, reliable attendance marking.
 
-Problem addressed (for HR)
-- Large classes require a fast, low-friction way to mark attendance on mobile devices.
-- Manual entry processes are slow and prone to mistakes; there was no simple, auditable flow for quick corrections.
+Overview
 
-What I built
-- A compact PWA that supports single-tap toggles for Present/Absent and a 3-second long-press to reset a period.
-- Visual and programmatic safeguards to avoid accidental changes while scrolling.
-- Local persistence for offline usage and quick builds for deployment.
+This app helps instructors and staff mark attendance quickly and accurately on mobile devices. It reduces accidental changes during scrolling, provides an explicit reset flow for corrections, and works offline.
 
-Business impact
-- Faster roll-call: reduces per-student marking time and classroom distraction.
-- Lower error rate due to explicit reset and movement-cancellation during gestures.
-- Easy to deploy and test as a PWA on phones — minimal training required for staff.
+Core value
 
-Quick tech summary (non-technical)
-- Frontend: React + TypeScript (modern, maintainable stack)
-- Build: Vite (fast local dev and production builds)
-- UX: Mobile-first with an eye on accessibility and offline support
+- Rapid roll-call: single-tap toggles for Present/Absent
+- Safe corrections: long-press (3s) or explicit Reset to clear a mark
+- Offline-first persistence for classrooms with limited connectivity
 
-How to try it (for reviewers / non-devs)
-1. Run this in the project folder:
+Primary features
+
+- Tap to toggle Present / Absent
+- Long-press (3 seconds) to clear a period
+- Visible Reset control on marked periods
+- Local persistence and quick save debounce
+- PWA-ready (manifest, icons, service worker)
+
+Technology
+
+- Frontend: React + TypeScript
+- Build: Vite
+- Animations: Framer Motion
+- Gesture handling: `src/hooks/useAttendanceGesture.ts` (pointer events + RAF progress)
+
+Try it locally
+
+1. Install dependencies and run the dev server:
 
 ```bash
 npm install
 npm run dev
 ```
 
-2. Open `http://localhost:5173` in a browser on your phone or desktop.
-3. Add a subject using the Add (+) button, then tap a period to mark Present/Absent.
-4. To clear a mark: press-and-hold a period for 3 seconds, or use the visible `Reset` button on marked cards.
+2. Open http://localhost:5173 in a browser (mobile or desktop).
 
-What to look for during review
-- Speed of marking (tap to toggle)
-- Stability while scrolling (no accidental marks)
-- Clear reset workflow and confirmation that data is persisted locally
+Quick demo steps
 
-Next steps I can take for production readiness
-- Add CI to run type checks and builds on PRs
-- Add a short demo video and user guide for staff
-- Add analytics or an audit log for attendance changes
+- Add a subject via the Add (+) button.
+- Tap a period to mark Present or Absent.
+- To clear: press-and-hold for 3 seconds or use the Reset button on the marked card.
 
-Contact
-- If you want me to prepare a short demo script (2–3 minutes) for stakeholders or a one-page user guide for staff, tell me and I’ll create it.
+Notes for maintainers
+
+- `LONG_PRESS_DURATION` is defined in `src/constants/app.ts`.
+- Gesture logic is in `src/hooks/useAttendanceGesture.ts`.
+- The attendance card UI and Reset control are in `src/components/PeriodCard.tsx`.
+
+Deployment
+
+Configured for static hosting (Vercel recommended). Build with:
+
+```bash
+npm run build
+```
+
+Next steps (optional)
+
+- Add CI to run typechecks and builds on PRs
+- Add a brief demo video and a one-page user guide for staff
+
+If you want this README tailored for a pitch deck or an internal one-pager, I can prepare that next.
 
 ---
 
