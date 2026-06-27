@@ -1,13 +1,3 @@
-git add .
-git commit -m "Initial commit: attendance tracker PWA"
-git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/attendance-tracker.git
-git push -u origin main
-git add .
-git commit -m "Describe your change"
-git push
-# Attendance Tracker — HR Summary
-
 Short summary
 
 This project is a mobile-first attendance tracker that solves the problem of slow, error-prone manual attendance logging. It lets users mark presence quickly, reduces accidental changes during scrolling, and provides a clear reset path for corrections.
