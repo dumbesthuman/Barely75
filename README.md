@@ -1,116 +1,101 @@
-# Attendance Tracker
+git add .
+git commit -m "Initial commit: attendance tracker PWA"
+git branch -M main
+git remote add origin https://github.com/YOUR_USERNAME/attendance-tracker.git
+git push -u origin main
+git add .
+git commit -m "Describe your change"
+git push
+#![Barely 75 — Attendance Tracker]
 
-A mobile-first PWA for tracking college attendance.
+Barely 75 is a compact, mobile-first attendance tracker focused on rapid, low-friction data entry for students and faculty. It's designed to be PWA-friendly, accessible, and resilient on low-end devices.
 
-## Run locally
+Why this project exists
+- Fast daily workflow for marking attendance on mobile
+- Avoids cognitive overhead: single-tap toggles, long-press to reset
+- Small bundle size, offline-first UX, and predictable animations
+
+Key features
+- Tap to toggle Present / Absent
+- Long-press (3s) to clear/reset a period
+- Local persistence with quick save debouncing
+- PWA ready (icons, manifest, service worker)
+- Accessible controls and keyboard support
+
+Architecture overview
+- Framework: React + TypeScript with Vite (dev + build)
+- Animation: Framer Motion for lightweight motion primitives
+- State: React Context + reducer pattern for deterministic updates
+- Gesture handling: `src/hooks/useAttendanceGesture.ts` (pointer events + RAF-based progress)
+- Styling: utility CSS with a few opinionated utilities for layout and accessibility
+
+Repository layout
+- `src/`
+   - `components/` — UI building blocks (`PeriodCard`, sheets, navigation)
+   - `hooks/` — `useAttendanceGesture`, persistence hooks
+   - `pages/` — top-level views (Dashboard)
+   - `store/` — `AttendanceContext`, reducer logic
+   - `utils/` — date, storage, and small helpers
+
+Getting started (local dev)
+
+Requirements
+- Node.js 18+ (or latest LTS)
+- npm (or pnpm/yarn)
+
+Install and run
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open http://localhost:5173 in your browser.
+Open `http://localhost:5173` to view the app.
 
----
-
-## Deploy with GitHub + Vercel
-
-This is the recommended way to get a public link like `https://attendance-tracker.vercel.app`.
-
-### Step 1 — Push the project to GitHub
-
-1. Create a free account at [github.com](https://github.com) if you don’t have one.
-
-2. Create a new repository on GitHub:
-   - Click **New repository**
-   - Name it e.g. `attendance-tracker`
-   - Leave it **Public** (works fine on free Vercel)
-   - Do **not** add a README or .gitignore (this project already has them)
-   - Click **Create repository**
-
-3. In your terminal, from this project folder:
+Build for production
 
 ```bash
-cd /Users/riteshhiremath/Documents/Hackathon
-
-git init
-git add .
-git commit -m "Initial commit: attendance tracker PWA"
-git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/attendance-tracker.git
-git push -u origin main
+npm run build
 ```
 
-Replace `YOUR_USERNAME` and `attendance-tracker` with your GitHub username and repo name.
-
-Git may ask you to sign in — use a [Personal Access Token](https://github.com/settings/tokens) as the password if prompted.
-
----
-
-### Step 2 — Deploy on Vercel
-
-1. Create a free account at [vercel.com](https://vercel.com) (you can sign in with GitHub).
-
-2. Click **Add New… → Project**.
-
-3. **Import** the GitHub repository you just pushed.
-
-4. Vercel auto-detects this as a Vite app. Keep these settings:
-   - **Framework Preset:** Vite
-   - **Build Command:** `npm run build`
-   - **Output Directory:** `dist`
-   - **Install Command:** `npm install`
-
-5. Click **Deploy**.
-
-6. Wait ~1 minute. Vercel gives you a live URL, e.g.:
-   `https://attendance-tracker-abc123.vercel.app`
-
-That URL is your **shareable link**. Open it on your phone and use **Add to Home Screen** to install.
-
----
-
-### Step 3 — Share the app
-
-After deploy, open the live site → **Settings → Share app** → **Copy share link**.
-
-(The share section is hidden on localhost — it only appears on the deployed URL.)
-
----
-
-### Updating the live app
-
-Whenever you change the code:
+Preview the production build
 
 ```bash
-git add .
-git commit -m "Describe your change"
-git push
+npm run preview
 ```
 
-Vercel redeploys automatically on every push to `main`.
+Core implementation notes (for maintainers)
+- Long-press duration lives in `src/constants/app.ts` as `LONG_PRESS_DURATION`.
+- Gesture logic is implemented in `src/hooks/useAttendanceGesture.ts`. It uses pointer capture, RAF to render progress, and cancels on meaningful pointer movement to avoid false positives while scrolling.
+- The attendance card UI is `src/components/PeriodCard.tsx`. It handles tap/hold gestures, animated progress, and the visible `Reset` affordance.
+
+UX and mobile considerations
+- `touch-action` is set carefully to allow vertical scrolling while preserving horizontal and press interactions where appropriate.
+- Long-press cancellation on movement prevents accidental clears when the user is scrolling.
+- Accessibility: interactive elements have focus styles and keyboard handlers for Enter/Space and Delete/Backspace for quick actions.
+
+Deployment
+- Vercel is the recommended provider; the repo includes `vercel.json` for sensible defaults. Build command: `npm run build`, output directory: `dist`.
+
+Contributing
+- Keep PRs small and focused: UI, gesture logic, or storage changes should be split when possible.
+- Add unit tests for gesture logic (consider `vitest`) when changing `useAttendanceGesture`.
+- Document UX changes in the PR description (how to reproduce, expected behavior).
+
+Maintenance notes
+- If long-press sensitivity needs tuning, change `LONG_PRESS_DURATION` and adjust progress smoothing in `useAttendanceGesture`.
+- For production monitoring, add lightweight analytics to capture unhandled rejections and slowed renders.
+
+Contact and next steps
+- If you want, I can add a `CONTRIBUTING.md`, an issue template, or CI (GitHub Actions) to run typechecks and builds on PRs.
 
 ---
 
-## Alternative: deploy without GitHub (Vercel CLI only)
+File references
+- `src/components/PeriodCard.tsx` — card UI and Reset control
+- `src/hooks/useAttendanceGesture.ts` — gesture implementation
+- `src/constants/app.ts` — `LONG_PRESS_DURATION` and other app constants
 
-```bash
-npm i -g vercel
-vercel login
-cd /Users/riteshhiremath/Documents/Hackathon
-vercel --prod
-```
+License: MIT (add LICENSE file if desired)
 
-You still get a public URL, but GitHub + Vercel is easier for updates.
-
----
-
-## Features
-
-- Add, edit, and delete subjects with weekly timetables
-- Browse schedule for past, today, and upcoming days
-- Mark weekend college days when classes happen on Sat/Sun
-- Install on phone (PWA)
-- Export/import JSON backup
-
-The app starts **empty**. Tap **+** to add subjects. Demo data is optional under **Settings → Load demo timetable**.
+If you'd like, I can expand this README with diagrams, API notes, or CI examples.
