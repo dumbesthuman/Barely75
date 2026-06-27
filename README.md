@@ -4,71 +4,79 @@ A premium, mobile‑first PWA for fast, reliable attendance marking.
 
 Overview
 
-This app helps instructors and staff mark attendance quickly and accurately on mobile devices. It reduces accidental changes during scrolling, provides an explicit reset flow for corrections, and works offline.
+This app targets the student problem of "bunking" — predicting whether a student is on track to meet their target attendance and how many classes they can afford to miss (or must attend) to hit that target. Students need a simple, privacy-friendly tool to plan attendance and avoid surprises at the end of the term.
 
-Core value
+Problem we solve
 
-- Rapid roll-call: single-tap toggles for Present/Absent
-- Safe corrections: long-press (3s) or explicit Reset to clear a mark
-- Offline-first persistence for classrooms with limited connectivity
+- Students often miscalculate how many classes they can miss while keeping their attendance above a required target.
+- Manual tracking is error-prone and time consuming; existing tools are not mobile‑first or lack actionable predictions.
 
-Primary features
+Our solution
 
-- Tap to toggle Present / Absent
-- Long-press (3 seconds) to clear a period
-- Visible Reset control on marked periods
-- Local persistence and quick save debounce
-- PWA-ready (manifest, icons, service worker)
+- Record attendance quickly with single taps (Present / Absent) and a clear Reset flow for fixes.
+- Provide a per-subject attendance forecast: projected attendance percentage, number of allowed absences to keep a target, and simple suggestions.
+- Local-first design: all data stays on the device unless the user exports it.
 
-Technology
+What you get
 
-- Frontend: React + TypeScript
-- Build: Vite
-- Animations: Framer Motion
-- Gesture handling: `src/hooks/useAttendanceGesture.ts` (pointer events + RAF progress)
+- Real-time attendance percentage per subject
+- Predictive "bunking" calculator that shows how many classes you can miss or need to attend to reach your target
+- Visual timeline and quick analytics cards for trend awareness
 
-Try it locally
+Primary features (student-focused)
 
-1. Install dependencies and run the dev server:
+- Fast marking: tap to toggle Present / Absent
+- Safe correction: long-press (3s) or Reset button to clear a period
+- Set a target attendance percentage and see live predictions
+- Export/import JSON backup for portability
+- PWA installable for easy access on phone home screen
+
+How to try it (students)
+
+1. Install and run locally:
 
 ```bash
 npm install
 npm run dev
 ```
 
-2. Open http://localhost:5173 in a browser (mobile or desktop).
+2. Open `http://localhost:5173` on your phone or desktop.
+3. Add your subjects and weekly schedule using the Add (+) flow.
+4. Each day, tap periods to mark Present/Absent. Watch the dashboard for per-subject predictions and the number of safe absences.
 
-Quick demo steps
+Interpretation guide
 
-- Add a subject via the Add (+) button.
-- Tap a period to mark Present or Absent.
-- To clear: press-and-hold for 3 seconds or use the Reset button on the marked card.
+- "Projected attendance": current percent if future classes follow the same pattern.
+- "Allowed absences": number of future classes you can miss and still meet your target.
+- Use Reset to correct accidental marks; predictions update immediately.
+
+Technology (short)
+
+- React + TypeScript, built with Vite
+- Framer Motion for micro-interactions
+- Custom `useAttendanceGesture` hook for robust touch/pointer handling
 
 Notes for maintainers
 
-- `LONG_PRESS_DURATION` is defined in `src/constants/app.ts`.
-- Gesture logic is in `src/hooks/useAttendanceGesture.ts`.
-- The attendance card UI and Reset control are in `src/components/PeriodCard.tsx`.
+- `src/constants/app.ts` — `LONG_PRESS_DURATION` controls long-press time
+- `src/hooks/useAttendanceGesture.ts` — pointer capture, RAF progress, movement-cancel
+- `src/components/PeriodCard.tsx` — UI for marking, progress bar, Reset control
+- Prediction logic and seed data: `src/constants/seed.ts` and `src/utils/attendance.ts`
 
 Deployment
 
-Configured for static hosting (Vercel recommended). Build with:
+Build and deploy the `dist/` folder to any static host (Vercel recommended):
 
 ```bash
 npm run build
 ```
 
-Next steps (optional)
+If you'd like, I can now:
 
-- Add CI to run typechecks and builds on PRs
-- Add a brief demo video and a one-page user guide for staff
+- Add a one-page student quick-start guide and demo script
+- Add CI to validate builds on push
 
-If you want this README tailored for a pitch deck or an internal one-pager, I can prepare that next.
+***
 
----
-
-File references for engineers (if needed)
-- `src/components/PeriodCard.tsx` — card UI and Reset control
-- `src/hooks/useAttendanceGesture.ts` — gesture implementation
-- `src/constants/app.ts` — `LONG_PRESS_DURATION`
+If this captures the app intent, I'll finalize and push the README update. If you want different wording (e.g., for a student-facing flyer), tell me the audience and tone.
 
