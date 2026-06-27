@@ -6,96 +6,60 @@ git push -u origin main
 git add .
 git commit -m "Describe your change"
 git push
-#![Barely 75 — Attendance Tracker]
+# Attendance Tracker — HR Summary
 
-Barely 75 is a compact, mobile-first attendance tracker focused on rapid, low-friction data entry for students and faculty. It's designed to be PWA-friendly, accessible, and resilient on low-end devices.
+Short summary
 
-Why this project exists
-- Fast daily workflow for marking attendance on mobile
-- Avoids cognitive overhead: single-tap toggles, long-press to reset
-- Small bundle size, offline-first UX, and predictable animations
+This project is a mobile-first attendance tracker that solves the problem of slow, error-prone manual attendance logging. It lets users mark presence quickly, reduces accidental changes during scrolling, and provides a clear reset path for corrections.
 
-Key features
-- Tap to toggle Present / Absent
-- Long-press (3s) to clear/reset a period
-- Local persistence with quick save debouncing
-- PWA ready (icons, manifest, service worker)
-- Accessible controls and keyboard support
+Problem addressed (for HR)
+- Large classes require a fast, low-friction way to mark attendance on mobile devices.
+- Manual entry processes are slow and prone to mistakes; there was no simple, auditable flow for quick corrections.
 
-Architecture overview
-- Framework: React + TypeScript with Vite (dev + build)
-- Animation: Framer Motion for lightweight motion primitives
-- State: React Context + reducer pattern for deterministic updates
-- Gesture handling: `src/hooks/useAttendanceGesture.ts` (pointer events + RAF-based progress)
-- Styling: utility CSS with a few opinionated utilities for layout and accessibility
+What I built
+- A compact PWA that supports single-tap toggles for Present/Absent and a 3-second long-press to reset a period.
+- Visual and programmatic safeguards to avoid accidental changes while scrolling.
+- Local persistence for offline usage and quick builds for deployment.
 
-Repository layout
-- `src/`
-   - `components/` — UI building blocks (`PeriodCard`, sheets, navigation)
-   - `hooks/` — `useAttendanceGesture`, persistence hooks
-   - `pages/` — top-level views (Dashboard)
-   - `store/` — `AttendanceContext`, reducer logic
-   - `utils/` — date, storage, and small helpers
+Business impact
+- Faster roll-call: reduces per-student marking time and classroom distraction.
+- Lower error rate due to explicit reset and movement-cancellation during gestures.
+- Easy to deploy and test as a PWA on phones — minimal training required for staff.
 
-Getting started (local dev)
+Quick tech summary (non-technical)
+- Frontend: React + TypeScript (modern, maintainable stack)
+- Build: Vite (fast local dev and production builds)
+- UX: Mobile-first with an eye on accessibility and offline support
 
-Requirements
-- Node.js 18+ (or latest LTS)
-- npm (or pnpm/yarn)
-
-Install and run
+How to try it (for reviewers / non-devs)
+1. Run this in the project folder:
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open `http://localhost:5173` to view the app.
+2. Open `http://localhost:5173` in a browser on your phone or desktop.
+3. Add a subject using the Add (+) button, then tap a period to mark Present/Absent.
+4. To clear a mark: press-and-hold a period for 3 seconds, or use the visible `Reset` button on marked cards.
 
-Build for production
+What to look for during review
+- Speed of marking (tap to toggle)
+- Stability while scrolling (no accidental marks)
+- Clear reset workflow and confirmation that data is persisted locally
 
-```bash
-npm run build
-```
+Next steps I can take for production readiness
+- Add CI to run type checks and builds on PRs
+- Add a short demo video and user guide for staff
+- Add analytics or an audit log for attendance changes
 
-Preview the production build
-
-```bash
-npm run preview
-```
-
-Core implementation notes (for maintainers)
-- Long-press duration lives in `src/constants/app.ts` as `LONG_PRESS_DURATION`.
-- Gesture logic is implemented in `src/hooks/useAttendanceGesture.ts`. It uses pointer capture, RAF to render progress, and cancels on meaningful pointer movement to avoid false positives while scrolling.
-- The attendance card UI is `src/components/PeriodCard.tsx`. It handles tap/hold gestures, animated progress, and the visible `Reset` affordance.
-
-UX and mobile considerations
-- `touch-action` is set carefully to allow vertical scrolling while preserving horizontal and press interactions where appropriate.
-- Long-press cancellation on movement prevents accidental clears when the user is scrolling.
-- Accessibility: interactive elements have focus styles and keyboard handlers for Enter/Space and Delete/Backspace for quick actions.
-
-Deployment
-- Vercel is the recommended provider; the repo includes `vercel.json` for sensible defaults. Build command: `npm run build`, output directory: `dist`.
-
-Contributing
-- Keep PRs small and focused: UI, gesture logic, or storage changes should be split when possible.
-- Add unit tests for gesture logic (consider `vitest`) when changing `useAttendanceGesture`.
-- Document UX changes in the PR description (how to reproduce, expected behavior).
-
-Maintenance notes
-- If long-press sensitivity needs tuning, change `LONG_PRESS_DURATION` and adjust progress smoothing in `useAttendanceGesture`.
-- For production monitoring, add lightweight analytics to capture unhandled rejections and slowed renders.
-
-Contact and next steps
-- If you want, I can add a `CONTRIBUTING.md`, an issue template, or CI (GitHub Actions) to run typechecks and builds on PRs.
+Contact
+- If you want me to prepare a short demo script (2–3 minutes) for stakeholders or a one-page user guide for staff, tell me and I’ll create it.
 
 ---
 
-File references
+File references for engineers (if needed)
 - `src/components/PeriodCard.tsx` — card UI and Reset control
 - `src/hooks/useAttendanceGesture.ts` — gesture implementation
-- `src/constants/app.ts` — `LONG_PRESS_DURATION` and other app constants
+- `src/constants/app.ts` — `LONG_PRESS_DURATION`
 
-License: MIT (add LICENSE file if desired)
-
-If you'd like, I can expand this README with diagrams, API notes, or CI examples.
