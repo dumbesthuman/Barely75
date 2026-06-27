@@ -126,3 +126,51 @@ export const formatTimeRange = (startTime: string, endTime: string) => {
     minute: "2-digit",
   }).formatRange(start, end);
 };
+
+/** Format a date as "Jul 2025" */
+export const formatMonthYear = (value: string) =>
+  new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric" }).format(parseIsoDate(value));
+
+/** Format a date as "1 Jul" */
+export const formatDayMonth = (value: string) =>
+  new Intl.DateTimeFormat("en-US", { day: "numeric", month: "short" }).format(parseIsoDate(value));
+
+/**
+ * Returns how far through a semester we are as a 0-1 value.
+ * Returns null if dates are invalid.
+ */
+export const getSemesterProgress = (
+  startDate: string,
+  endDate: string,
+  todayIso: string,
+): { progress: number; daysLeft: number; totalDays: number; daysElapsed: number } | null => {
+  const start = parseIsoDate(startDate).getTime();
+  const end = parseIsoDate(endDate).getTime();
+  const today = parseIsoDate(todayIso).getTime();
+
+  if (end <= start) return null;
+
+  const totalDays = Math.round((end - start) / DAY_IN_MS);
+  const daysElapsed = Math.max(0, Math.round((today - start) / DAY_IN_MS));
+  const daysLeft = Math.max(0, Math.round((end - today) / DAY_IN_MS));
+  const progress = Math.min(1, Math.max(0, (today - start) / (end - start)));
+
+  return { progress, daysLeft, totalDays, daysElapsed };
+};
+
+/** Total calendar days in a semester */
+export const getSemesterDurationDays = (startDate: string, endDate: string): number => {
+  const start = parseIsoDate(startDate).getTime();
+  const end = parseIsoDate(endDate).getTime();
+  return Math.max(0, Math.round((end - start) / DAY_IN_MS));
+};
+
+/** Generate a suggested semester name like "Semester · Jul–Nov 2025" */
+export const suggestSemesterName = (startDate: string, endDate: string): string => {
+  if (!startDate || !endDate) return "New Semester";
+  const startMonth = new Intl.DateTimeFormat("en-US", { month: "short" }).format(parseIsoDate(startDate));
+  const endMonth = new Intl.DateTimeFormat("en-US", { month: "short" }).format(parseIsoDate(endDate));
+  const year = parseIsoDate(startDate).getFullYear();
+  return `Semester · ${startMonth}–${endMonth} ${year}`;
+};
+

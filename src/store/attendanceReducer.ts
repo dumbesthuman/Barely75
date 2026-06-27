@@ -1,13 +1,16 @@
 import { APP_STATE_VERSION, DEFAULT_SETTINGS } from "../constants/app";
 import { createEmptySemesterPeriods, createPeriodsForDate, createSampleState, ensurePeriodWindow } from "../constants/seed";
 import type {
+  ArchivedSemester,
   AttendanceState,
   PeriodStatus,
   ScheduleSlot,
+  SemesterInfo,
   SettingsState,
   Subject,
 } from "../types/attendance";
 import { cyclePresentAbsent } from "../utils/attendance";
+import { getTodayIso } from "../utils/date";
 
 export type AttendanceAction =
   | { type: "cycle-period"; periodId: string }
@@ -33,9 +36,21 @@ export type AttendanceAction =
   | { type: "ensure-period-window"; anchorDate: string }
   | { type: "mark-weekend-college"; dateIso: string; anchorDate: string }
   | { type: "import-state"; state: AttendanceState }
-  | { type: "mark-all-periods-for-date"; dateIso: string; status: PeriodStatus };
+  | { type: "mark-all-periods-for-date"; dateIso: string; status: PeriodStatus }
+  | { type: "set-semester"; semester: SemesterInfo }
+  | { type: "update-semester"; patch: Partial<Omit<SemesterInfo, "id">> }
+  | { type: "archive-and-start-new-semester"; newSemester: SemesterInfo };
 
 const clampTarget = (value: number) => Math.min(95, Math.max(60, Math.round(value)));
+
+/** Compute aggregate stats for archiving */
+const computeArchiveStats = (state: AttendanceState) => {
+  const attended = state.periods.filter((p) => p.status === "PRESENT").length;
+  const absent = state.periods.filter((p) => p.status === "ABSENT").length;
+  const conducted = attended + absent;
+  const attendanceRate = conducted === 0 ? 0 : Math.round((attended / conducted) * 1000) / 10;
+  return { conducted, attended, absent, attendanceRate };
+};
 
 export const attendanceReducer = (
   state: AttendanceState,
@@ -47,10 +62,7 @@ export const attendanceReducer = (
         ...state,
         periods: state.periods.map((period) =>
           period.id === action.periodId
-            ? {
-                ...period,
-                status: cyclePresentAbsent(period.status),
-              }
+            ? { ...period, status: cyclePresentAbsent(period.status) }
             : period,
         ),
       };
@@ -59,10 +71,7 @@ export const attendanceReducer = (
         ...state,
         periods: state.periods.map((period) =>
           period.id === action.periodId
-            ? {
-                ...period,
-                status: action.status,
-              }
+            ? { ...period, status: action.status }
             : period,
         ),
       };
@@ -71,11 +80,7 @@ export const attendanceReducer = (
         ...state,
         periods: state.periods.map((period) =>
           period.id === action.periodId
-            ? {
-                ...period,
-                status: null,
-                note: undefined,
-              }
+            ? { ...period, status: null, note: undefined }
             : period,
         ),
       };
@@ -84,10 +89,7 @@ export const attendanceReducer = (
         ...state,
         periods: state.periods.map((period) =>
           period.id === action.periodId
-            ? {
-                ...period,
-                status: "CANCELLED",
-              }
+            ? { ...period, status: "CANCELLED" }
             : period,
         ),
       };
@@ -96,10 +98,7 @@ export const attendanceReducer = (
         ...state,
         periods: state.periods.map((period) =>
           period.id === action.periodId
-            ? {
-                ...period,
-                note: action.note || undefined,
-              }
+            ? { ...period, note: action.note || undefined }
             : period,
         ),
       };
@@ -118,9 +117,7 @@ export const attendanceReducer = (
         subjects: [...state.subjects, action.subject],
         schedule: [...state.schedule, ...action.scheduleSlots],
         periods: [...state.periods, ...action.periods].sort((left, right) => {
-          if (left.date !== right.date) {
-            return left.date.localeCompare(right.date);
-          }
+          if (left.date !== right.date) return left.date.localeCompare(right.date);
           return left.periodNumber - right.periodNumber;
         }),
       };
@@ -188,6 +185,7 @@ export const attendanceReducer = (
           action.anchorDate,
           state.weekendCollegeDays,
         ),
+        currentSemester: sample.currentSemester,
       };
     }
     case "update-subject-target":
@@ -195,10 +193,7 @@ export const attendanceReducer = (
         ...state,
         subjects: state.subjects.map((subject) =>
           subject.id === action.subjectId
-            ? {
-                ...subject,
-                targetAttendance: clampTarget(action.targetAttendance),
-              }
+            ? { ...subject, targetAttendance: clampTarget(action.targetAttendance) }
             : subject,
         ),
       };
@@ -222,15 +217,65 @@ export const attendanceReducer = (
           targetAttendance: state.settings.defaultTargetAttendance,
         })),
       };
+
+    case "set-semester":
+      return {
+        ...state,
+        currentSemester: action.semester,
+      };
+
+    case "update-semester":
+      if (!state.currentSemester) return state;
+      return {
+        ...state,
+        currentSemester: {
+          ...state.currentSemester,
+          ...action.patch,
+        },
+      };
+
+    case "archive-and-start-new-semester": {
+      // Archive current semester with its stats and subjects
+      const archived: ArchivedSemester[] = state.currentSemester
+        ? [
+            ...state.archivedSemesters,
+            {
+              semester: state.currentSemester,
+              subjects: state.subjects,
+              stats: computeArchiveStats(state),
+              archivedAt: getTodayIso(),
+            },
+          ]
+        : state.archivedSemesters;
+
+      // Start fresh: keep subjects/schedule, clear periods + weekend days
+      return {
+        version: APP_STATE_VERSION,
+        subjects: state.subjects,
+        schedule: state.schedule,
+        periods: createEmptySemesterPeriods(
+          state.schedule,
+          new Date(`${action.newSemester.startDate}T12:00:00`),
+        ),
+        weekendCollegeDays: [],
+        settings: state.settings,
+        currentSemester: action.newSemester,
+        archivedSemesters: archived,
+      };
+    }
+
     case "reset-semester":
       return {
         version: APP_STATE_VERSION,
         subjects: state.subjects,
         schedule: state.schedule,
         periods: createEmptySemesterPeriods(state.schedule, new Date(`${action.startDate}T12:00:00`)),
-        weekendCollegeDays: [], // fix: also clear weekend college days on reset
+        weekendCollegeDays: [],
         settings: state.settings,
+        currentSemester: state.currentSemester,
+        archivedSemesters: state.archivedSemesters,
       };
+
     case "ensure-period-window":
       return {
         ...state,
@@ -241,10 +286,9 @@ export const attendanceReducer = (
           state.weekendCollegeDays,
         ),
       };
+
     case "mark-weekend-college": {
-      if (state.weekendCollegeDays.includes(action.dateIso)) {
-        return state;
-      }
+      if (state.weekendCollegeDays.includes(action.dateIso)) return state;
 
       const weekendCollegeDays = [...state.weekendCollegeDays, action.dateIso].sort();
       const newPeriods = createPeriodsForDate(action.dateIso, state.schedule, weekendCollegeDays);
@@ -255,22 +299,24 @@ export const attendanceReducer = (
         ...state,
         weekendCollegeDays,
         periods: [...state.periods, ...additions].sort((left, right) => {
-          if (left.date !== right.date) {
-            return left.date.localeCompare(right.date);
-          }
+          if (left.date !== right.date) return left.date.localeCompare(right.date);
           return left.periodNumber - right.periodNumber;
         }),
       };
     }
+
     case "import-state":
       return {
         ...action.state,
         weekendCollegeDays: action.state.weekendCollegeDays ?? [],
+        currentSemester: action.state.currentSemester ?? null,
+        archivedSemesters: action.state.archivedSemesters ?? [],
         settings: {
           ...DEFAULT_SETTINGS,
           ...action.state.settings,
         },
       };
+
     default:
       return state;
   }

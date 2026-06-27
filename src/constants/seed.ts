@@ -230,11 +230,19 @@ export const createEmptyState = (): AttendanceState => ({
   periods: [],
   weekendCollegeDays: [],
   settings: DEFAULT_SETTINGS,
+  currentSemester: null,
+  archivedSemesters: [],
 });
 
 export const createSampleState = (today = new Date()): AttendanceState => {
   const currentDate = toMidday(today);
   const schedule = buildSchedule();
+
+  // Auto-generate a sample semester covering the current academic period
+  const semStart = toMidday(new Date(today));
+  semStart.setDate(semStart.getDate() - 90); // ~3 months back
+  const semEnd = toMidday(new Date(today));
+  semEnd.setDate(semEnd.getDate() + 60); // ~2 months forward
 
   return {
     version: APP_STATE_VERSION,
@@ -243,6 +251,13 @@ export const createSampleState = (today = new Date()): AttendanceState => {
     periods: buildHistoricalPeriods(schedule, currentDate, 14),
     weekendCollegeDays: [],
     settings: DEFAULT_SETTINGS,
+    currentSemester: {
+      id: `sem-demo-${crypto.randomUUID().slice(0, 8)}`,
+      name: "Demo Semester",
+      startDate: toIsoDate(semStart),
+      endDate: toIsoDate(semEnd),
+    },
+    archivedSemesters: [],
   };
 };
 

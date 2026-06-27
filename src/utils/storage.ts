@@ -8,11 +8,8 @@ export interface PersistenceAdapter {
   save: (state: AttendanceState) => void;
 }
 
-const isStateShape = (value: unknown): value is AttendanceState => {
-  if (!value || typeof value !== "object") {
-    return false;
-  }
-
+const isStateShape = (value: unknown): value is Partial<AttendanceState> => {
+  if (!value || typeof value !== "object") return false;
   const state = value as Partial<AttendanceState>;
   return (
     typeof state.version === "number" &&
@@ -23,9 +20,26 @@ const isStateShape = (value: unknown): value is AttendanceState => {
   );
 };
 
+/**
+ * Migrate state from any previous version to current.
+ * Safe to call repeatedly — missing fields get sensible defaults.
+ */
+const migrateState = (raw: Partial<AttendanceState>): AttendanceState => {
+  const empty = createEmptyState();
+  return {
+    ...empty,
+    ...raw,
+    version: APP_STATE_VERSION,
+    // v4 additions — backfill if missing
+    currentSemester: raw.currentSemester ?? null,
+    archivedSemesters: raw.archivedSemesters ?? [],
+    weekendCollegeDays: raw.weekendCollegeDays ?? [],
+    settings: { ...empty.settings, ...(raw.settings ?? {}) },
+  };
+};
+
 const hydrateState = (state: AttendanceState): AttendanceState => ({
   ...state,
-  weekendCollegeDays: state.weekendCollegeDays ?? [],
   periods: ensurePeriodWindow(
     state.periods,
     state.schedule,
@@ -47,27 +61,28 @@ export const localStorageAdapter: PersistenceAdapter = {
       }
 
       const parsed = JSON.parse(raw) as unknown;
-      if (!isStateShape(parsed) || parsed.version !== APP_STATE_VERSION) {
+      if (!isStateShape(parsed)) {
         return hydrateState(createEmptyState());
       }
 
-      return hydrateState(parsed);
+      // Migrate older state versions (never wipe data outright)
+      if ((parsed.version ?? 0) < APP_STATE_VERSION) {
+        return hydrateState(migrateState(parsed));
+      }
+
+      return hydrateState(parsed as AttendanceState);
     } catch {
       return hydrateState(createEmptyState());
     }
   },
   save: (state) => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
+    if (typeof window === "undefined") return;
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   },
 };
 
 export const createDebouncedSaver = (save: (state: AttendanceState) => void) => {
   let timeoutId: number | undefined;
-
   return (state: AttendanceState) => {
     window.clearTimeout(timeoutId);
     timeoutId = window.setTimeout(() => save(state), PERSISTENCE_DEBOUNCE_MS);
